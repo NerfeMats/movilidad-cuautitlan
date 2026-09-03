@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Convocatorias de movilidad</title>
+</head>
+
+<body>
+
+    <h1>Convocatorias de movilidad</h1>
+
+    {% for convocatoria in convocatorias %}
+
+        <article>
+
+            <h2>
+                <a href="{% url 'convocatorias:detalle' convocatoria.pk %}">
+                    {{ convocatoria.titulo }}
+                </a>
+            </h2>
+
+            <p>
+                {{ convocatoria.tipo_movilidad }}
+            </p>
+
+            <p>
+                {{ convocatoria.get_ciclo_display }}
+                {{ convocatoria.anio }}
+            </p>
+
+            {% if convocatoria.resumen %}
+                <p>
+                    {{ convocatoria.resumen }}
+                </p>
+            {% endif %}
+
+        </article>
+
+        <hr>
+
+    {% empty %}
+
+        <p>
+            Actualmente no existen convocatorias publicadas.
+        </p>
+
+    {% endfor %}
+
+</body>
+</html>

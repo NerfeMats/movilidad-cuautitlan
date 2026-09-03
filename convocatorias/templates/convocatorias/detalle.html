@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ convocatoria.titulo }}</title>
+</head>
+
+<body>
+
+    <p>
+        <a href="{% url 'convocatorias:lista' %}">
+            ← Volver a convocatorias
+        </a>
+    </p>
+
+    <h1>
+        {{ convocatoria.titulo }}
+    </h1>
+
+    <p>
+        <strong>Tipo de movilidad:</strong>
+        {{ convocatoria.tipo_movilidad }}
+    </p>
+
+    <p>
+        <strong>Periodo:</strong>
+        {{ convocatoria.get_ciclo_display }}
+        {{ convocatoria.anio }}
+    </p>
+
+    {% if convocatoria.resumen %}
+
+        <h2>Resumen</h2>
+
+        <p>
+            {{ convocatoria.resumen }}
+        </p>
+
+    {% endif %}
+
+
+    {% if convocatoria.descripcion %}
+
+        <h2>Descripción</h2>
+
+        <p>
+            {{ convocatoria.descripcion }}
+        </p>
+
+    {% endif %}
+
+
+    <h2>Requisitos</h2>
+
+    <ul>
+
+        {% for requisito in convocatoria.requisitos.all %}
+
+            {% if requisito.activo %}
+
+                <li>
+                    {{ requisito.texto }}
+
+                    {% if requisito.obligatorio %}
+                        <strong>(Obligatorio)</strong>
+                    {% endif %}
+                </li>
+
+            {% endif %}
+
+        {% empty %}
+
+            <li>No hay requisitos registrados.</li>
+
+        {% endfor %}
+
+    </ul>
+
+
+    <h2>Fechas importantes</h2>
+
+    <ul>
+
+        {% for fecha in convocatoria.fechas_importantes.all %}
+
+            {% if fecha.activa %}
+
+                <li>
+
+                    <strong>{{ fecha.titulo }}</strong>
+
+                    -
+                    {{ fecha.fecha }}
+
+                    {% if fecha.hora %}
+                        - {{ fecha.hora }}
+                    {% endif %}
+
+                    {% if fecha.es_fecha_limite %}
+                        <strong>Fecha límite</strong>
+                    {% endif %}
+
+                </li>
+
+            {% endif %}
+
+        {% empty %}
+
+            <li>No hay fechas registradas.</li>
+
+        {% endfor %}
+
+    </ul>
+
+
+    <h2>Instituciones disponibles</h2>
+
+    <ul>
+
+        {% for relacion in convocatoria.instituciones.all %}
+
+            {% if relacion.disponible %}
+
+                <li>
+
+                    <strong>
+                        {{ relacion.ies.nombre }}
+                    </strong>
+
+                    -
+                    {{ relacion.ies.pais }}
+
+                    {% if relacion.observaciones %}
+                        <p>{{ relacion.observaciones }}</p>
+                    {% endif %}
+
+                    {% if relacion.restricciones %}
+                        <p>
+                            <strong>Restricciones:</strong>
+                            {{ relacion.restricciones }}
+                        </p>
+                    {% endif %}
+
+                </li>
+
+            {% endif %}
+
+        {% empty %}
+
+            <li>
+                No hay instituciones registradas.
+            </li>
+
+        {% endfor %}
+
+    </ul>
+
+
+    {% if convocatoria.fuente_oficial_url %}
+
+        <p>
+            <a
+                href="{{ convocatoria.fuente_oficial_url }}"
+                target="_blank"
+            >
+                Consultar fuente oficial
+            </a>
+        </p>
+
+    {% endif %}
+
+
+    {% if convocatoria.documento_oficial %}
+
+        <p>
+            <a
+                href="{{ convocatoria.documento_oficial.url }}"
+                target="_blank"
+            >
+                Descargar documento oficial
+            </a>
+        </p>
+
+    {% endif %}
+
+</body>
+</html>
