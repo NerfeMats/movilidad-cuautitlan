@@ -1,0 +1,399 @@
+:root {
+    --color-grafito: #34373d;
+    --color-verde: #4c5f59;
+    --color-verde-claro: #6f8e94;
+    --color-marfil: #f3f1ec;
+    --color-blanco: #ffffff;
+    --color-texto: #22252a;
+    --color-borde: #dde2e3;
+}
+
+
+/* ===============================
+   BASE
+================================ */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    color: var(--color-texto);
+    background: var(--color-blanco);
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+/* ===============================
+   NAVEGACIÓN
+================================ */
+
+.navbar {
+    min-height: 74px;
+}
+
+.navbar-brand {
+    color: var(--color-grafito);
+    line-height: 1.1;
+}
+
+.navbar-brand small {
+    font-size: .75rem;
+    color: #687078;
+}
+
+.nav-link {
+    color: var(--color-grafito);
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    color: var(--color-verde);
+}
+
+
+/* ===============================
+   BOTONES
+================================ */
+
+.btn-movilidad {
+    background: var(--color-verde);
+    border-color: var(--color-verde);
+    color: white;
+}
+
+.btn-movilidad:hover {
+    background: #3e514b;
+    border-color: #3e514b;
+    color: white;
+}
+
+
+/* ===============================
+   HERO
+================================ */
+
+.hero-movilidad {
+    padding-top: 74px;
+    background:
+        linear-gradient(
+            90deg,
+            #f4f7f7 0%,
+            #ffffff 60%
+        );
+}
+
+.hero-etiqueta {
+    color: var(--color-verde-claro);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.hero-contenido h1 {
+    margin-top: 1rem;
+    font-size: clamp(2.6rem, 5vw, 4.7rem);
+    line-height: 1.05;
+    font-weight: 700;
+    color: var(--color-grafito);
+}
+
+.hero-contenido h1 span {
+    display: block;
+    color: var(--color-verde);
+}
+
+.hero-texto {
+    max-width: 600px;
+    margin: 1.5rem 0 2rem;
+    font-size: 1.2rem;
+    line-height: 1.6;
+}
+
+.hero-imagen img {
+    width: 100%;
+    max-height: 620px;
+    object-fit: cover;
+    border-radius: 24px;
+}
+
+
+/* ===============================
+   SECCIONES
+================================ */
+
+.seccion {
+    padding: 5rem 0;
+}
+
+.seccion-suave {
+    background: #f6f7f6;
+}
+
+.encabezado-seccion {
+    margin-bottom: 2rem;
+}
+
+.encabezado-seccion h2 {
+    font-weight: 700;
+    color: var(--color-grafito);
+}
+
+.encabezado-seccion p {
+    color: #687078;
+}
+
+
+/* ===============================
+   ACCESOS
+================================ */
+
+.acceso-card {
+    min-height: 145px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: .75rem;
+
+    padding: 1.5rem;
+
+    text-align: center;
+
+    color: var(--color-grafito);
+
+    background: #f7f7f7;
+
+    border: 1px solid transparent;
+    border-radius: 14px;
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease;
+}
+
+.acceso-card i {
+    font-size: 2rem;
+    color: var(--color-verde);
+}
+
+.acceso-card span {
+    font-weight: 600;
+}
+
+.acceso-card:hover {
+    transform: translateY(-4px);
+
+    border-color: var(--color-borde);
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, .07);
+}
+
+
+/* ===============================
+   TIPOS DE MOVILIDAD
+================================ */
+
+.movilidad-card {
+    height: 100%;
+
+    padding: 2rem;
+
+    background: white;
+
+    border: 1px solid var(--color-borde);
+    border-radius: 18px;
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.movilidad-card > i {
+    font-size: 2.4rem;
+    color: var(--color-verde);
+}
+
+.movilidad-card h3 {
+    margin-top: 1.3rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.movilidad-card p {
+    color: #606870;
+}
+
+.movilidad-card a {
+    color: var(--color-verde);
+    font-weight: 600;
+}
+
+.movilidad-card:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 16px 40px
+        rgba(0, 0, 0, .07);
+}
+
+
+/* ===============================
+   CONVOCATORIAS
+================================ */
+
+.convocatoria-card {
+    height: 100%;
+
+    padding: 2rem;
+
+    background: white;
+
+    border: 1px solid var(--color-borde);
+    border-radius: 18px;
+
+    box-shadow:
+        0 8px 30px
+        rgba(0, 0, 0, .04);
+}
+
+.convocatoria-card h3 {
+    margin: 1rem 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.estado {
+    display: inline-block;
+
+    padding: .35rem .75rem;
+
+    border-radius: 20px;
+
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.estado.abierta {
+    background: #dff3e5;
+    color: #28663b;
+}
+
+
+/* ===============================
+   FAQ
+================================ */
+
+.accordion-item {
+    border-color: var(--color-borde);
+}
+
+.accordion-button:not(.collapsed) {
+    color: var(--color-verde);
+    background: #f5f7f6;
+}
+
+
+/* ===============================
+   FOOTER
+================================ */
+
+.footer-movilidad {
+    color: white;
+    background: var(--color-grafito);
+}
+
+.footer-movilidad a {
+    color: #dfe4e4;
+}
+
+.footer-movilidad a:hover {
+    color: white;
+}
+
+
+/* ===============================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 991px) {
+
+    .hero-movilidad {
+        padding-top: 110px;
+    }
+
+    .hero-contenido {
+        margin-bottom: 3rem;
+    }
+
+    .hero-contenido h1 {
+        font-size: 3rem;
+    }
+
+    .hero-imagen img {
+        max-height: 450px;
+    }
+
+}
+
+
+@media (max-width: 576px) {
+
+    .seccion {
+        padding: 3.5rem 0;
+    }
+
+    .hero-contenido h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-texto {
+        font-size: 1.05rem;
+    }
+
+}
+
+.convocatoria-tipo {
+    margin-top: 1rem;
+
+    color: var(--color-verde);
+    font-size: .85rem;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.convocatoria-periodo {
+    display: flex;
+    align-items: center;
+
+    gap: .5rem;
+
+    margin-bottom: 1rem;
+
+    color: #697178;
+    font-size: .9rem;
+}
+
+.convocatoria-card p {
+    color: #606870;
+    line-height: 1.6;
+}

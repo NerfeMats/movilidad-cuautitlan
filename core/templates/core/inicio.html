@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Movilidad Académica | CU UAEM Cuautitlán Izcalli
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ==============================
+     HERO
+================================ -->
+
+<section class="hero-movilidad">
+
+    <div class="container">
+
+        <div class="row align-items-center min-vh-100">
+
+            <div class="col-lg-6 hero-contenido">
+
+                <span class="hero-etiqueta">
+                    Universidad Autónoma del Estado de México
+                </span>
+
+                <h1>
+                    Movilidad Académica
+                    <span>
+                        CU UAEM Cuautitlán Izcalli
+                    </span>
+                </h1>
+
+                <p class="hero-texto">
+                    Consulta convocatorias, tipos de movilidad,
+                    fechas importantes y orientación para tu
+                    experiencia académica.
+                </p>
+
+                <div class="d-flex flex-wrap gap-3">
+
+                    <a
+                        href="#convocatorias"
+                        class="btn btn-movilidad btn-lg"
+                    >
+                        Ver convocatorias activas
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                    <a
+                        href="#movilidad"
+                        class="btn btn-outline-dark btn-lg"
+                    >
+                        Conocer tipos de movilidad
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-lg-6 hero-imagen">
+
+                <img
+                    src="{% static 'img/fachada-cuautitlan.jpeg' %}"
+                    alt="Centro Universitario UAEM Cuautitlán Izcalli"
+                    class="img-fluid"
+                >
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ==============================
+     ACCESOS RÁPIDOS
+================================ -->
+
+<section class="seccion accesos">
+
+    <div class="container">
+
+        <div class="encabezado-seccion">
+
+            <h2>
+                ¿Qué necesitas consultar?
+            </h2>
+
+            <p>
+                Accede rápidamente a la información
+                más importante.
+            </p>
+
+        </div>
+
+        <div class="row g-3">
+
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="#convocatorias"
+                   class="acceso-card">
+
+                    <i class="bi bi-file-earmark-text"></i>
+
+                    <span>
+                        Convocatorias vigentes
+                    </span>
+
+                </a>
+            </div>
+
+
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="#movilidad"
+                   class="acceso-card">
+
+                    <i class="bi bi-people"></i>
+
+                    <span>
+                        Intrainstitucional
+                    </span>
+
+                </a>
+            </div>
+
+
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="#movilidad"
+                   class="acceso-card">
+
+                    <i class="bi bi-map"></i>
+
+                    <span>
+                        Nacional saliente
+                    </span>
+
+                </a>
+            </div>
+
+
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="#movilidad"
+                   class="acceso-card">
+
+                    <i class="bi bi-globe-americas"></i>
+
+                    <span>
+                        Internacional
+                    </span>
+
+                </a>
+            </div>
+
+
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="#fechas"
+                   class="acceso-card">
+
+                    <i class="bi bi-calendar3"></i>
+
+                    <span>
+                        Fechas importantes
+                    </span>
+
+                </a>
+            </div>
+
+
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="#faq"
+                   class="acceso-card">
+
+                    <i class="bi bi-question-circle"></i>
+
+                    <span>
+                        Preguntas frecuentes
+                    </span>
+
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ==============================
+     TIPOS DE MOVILIDAD
+================================ -->
+
+<section
+    id="movilidad"
+    class="seccion seccion-suave"
+>
+
+    <div class="container">
+
+        <div class="encabezado-seccion">
+
+            <h2>
+                Tipos de movilidad
+            </h2>
+
+            <p>
+                Explora las opciones disponibles
+                para tu experiencia académica.
+            </p>
+
+        </div>
+
+
+        <div class="row g-4">
+
+            <div class="col-lg-4">
+
+                <article class="movilidad-card">
+
+                    <i class="bi bi-people"></i>
+
+                    <h3>
+                        Intrainstitucional
+                    </h3>
+
+                    <p>
+                        Movilidad entre espacios académicos
+                        de la Universidad Autónoma del
+                        Estado de México.
+                    </p>
+
+                    <a href="#">
+                        Saber más
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </article>
+
+            </div>
+
+
+            <div class="col-lg-4">
+
+                <article class="movilidad-card">
+
+                    <i class="bi bi-map"></i>
+
+                    <h3>
+                        Nacional saliente
+                    </h3>
+
+                    <p>
+                        Experiencias académicas en
+                        instituciones de educación superior
+                        dentro de México.
+                    </p>
+
+                    <a href="#">
+                        Saber más
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </article>
+
+            </div>
+
+
+            <div class="col-lg-4">
+
+                <article class="movilidad-card">
+
+                    <i class="bi bi-globe-americas"></i>
+
+                    <h3>
+                        Internacional saliente
+                    </h3>
+
+                    <p>
+                        Experiencias académicas en
+                        instituciones de educación superior
+                        del extranjero.
+                    </p>
+
+                    <a href="#">
+                        Saber más
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ==============================
+     CONVOCATORIAS
+================================ -->
+
+<section
+    id="convocatorias"
+    class="seccion"
+>
+
+    <div class="container">
+
+        <div class="encabezado-seccion">
+
+            <h2>
+                Convocatorias destacadas
+            </h2>
+
+            <p>
+                Consulta las oportunidades
+                disponibles actualmente.
+            </p>
+
+        </div>
+
+     <div class="row g-4">
+
+        {% for convocatoria in convocatorias %}
+
+        <div class="col-md-6 col-lg-4">
+
+            <article class="convocatoria-card">
+
+                {% if convocatoria.destacada %}
+                    <span class="estado abierta">
+                        Destacada
+                    </span>
+                {% endif %}
+
+                <div class="convocatoria-tipo">
+                    {{ convocatoria.tipo_movilidad.nombre }}
+                </div>
+
+                <h3>
+                    {{ convocatoria.titulo }}
+                </h3>
+
+                <div class="convocatoria-periodo">
+                    <i class="bi bi-calendar3"></i>
+
+                    {{ convocatoria.get_ciclo_display }}
+                    {{ convocatoria.anio }}
+                </div>
+
+                {% if convocatoria.resumen %}
+                    <p>
+                        {{ convocatoria.resumen }}
+                    </p>
+                {% endif %}
+
+                <a
+                    href="#"
+                    class="btn btn-movilidad"
+                >
+                    Consultar convocatoria
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+            </article>
+
+        </div>
+
+    {% empty %}
+
+        <div class="col-12">
+
+            <div class="alert alert-light border">
+                Por el momento no hay convocatorias publicadas.
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+    </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ==============================
+     FECHAS / AVISOS
+================================ -->
+
+<section
+    id="fechas"
+    class="seccion seccion-suave"
+>
+
+    <div class="container">
+
+        <div class="row g-5">
+
+            <div class="col-lg-6">
+
+                <h2>
+                    Fechas importantes
+                </h2>
+
+                <p>
+                    Próximamente mostraremos aquí
+                    las fechas de las convocatorias activas.
+                </p>
+
+            </div>
+
+
+            <div class="col-lg-6">
+
+                <h2>
+                    Avisos recientes
+                </h2>
+
+                <p>
+                    Consulta actualizaciones y comunicaciones
+                    relevantes del área de movilidad.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ==============================
+     FAQ
+================================ -->
+
+<section
+    id="faq"
+    class="seccion"
+>
+
+    <div class="container">
+
+        <div class="encabezado-seccion">
+
+            <h2>
+                Preguntas frecuentes
+            </h2>
+
+            <p>
+                Encuentra respuestas rápidas a las dudas más comunes
+                sobre movilidad académica.
+            </p>
+
+        </div>
+
+
+        {% if preguntas_frecuentes %}
+
+            <div
+                class="accordion"
+                id="faqAccordion"
+            >
+
+                {% for faq in preguntas_frecuentes %}
+
+                    <div class="accordion-item">
+
+                        <h2
+                            class="accordion-header"
+                            id="headingFaq{{ faq.id }}"
+                        >
+
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapseFaq{{ faq.id }}"
+                                aria-expanded="false"
+                                aria-controls="collapseFaq{{ faq.id }}"
+                            >
+
+                                {{ faq.pregunta }}
+
+                            </button>
+
+                        </h2>
+
+                        <div
+                            id="collapseFaq{{ faq.id }}"
+                            class="accordion-collapse collapse"
+                            aria-labelledby="headingFaq{{ faq.id }}"
+                            data-bs-parent="#faqAccordion"
+                        >
+
+                            <div class="accordion-body">
+
+                                {{ faq.respuesta|linebreaks }}
+
+                                {% if faq.fuente_oficial_url %}
+
+                                    <div class="mt-3">
+
+                                        <a
+                                            href="{{ faq.fuente_oficial_url }}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="faq-fuente"
+                                        >
+                                            Consultar fuente oficial
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                        </a>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-light border">
+                Por el momento no hay preguntas frecuentes publicadas.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}
