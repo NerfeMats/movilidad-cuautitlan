@@ -12,6 +12,24 @@ from .models import (
 )
 
 
+class ActividadExpedienteInline(admin.TabularInline):
+    model = ActividadExpediente
+    extra = 0
+    can_delete = False
+
+    fields = (
+        "actividad_proceso",
+        "estado",
+        "fecha_limite",
+        "fecha_completada",
+        "observaciones",
+    )
+
+    readonly_fields = (
+        "actividad_proceso",
+    )
+
+
 @admin.register(ExpedienteMovilidad)
 class ExpedienteMovilidadAdmin(admin.ModelAdmin):
 
@@ -36,7 +54,9 @@ class ExpedienteMovilidadAdmin(admin.ModelAdmin):
         "alumno__first_name",
         "alumno__last_name",
     )
-
+    inlines = [
+        ActividadExpedienteInline,
+        ]
     def save_model(self, request, obj, form, change):
         es_nuevo = obj.pk is None
 
@@ -85,6 +105,7 @@ class ActividadExpedienteAdmin(admin.ModelAdmin):
     list_filter = (
         "estado",
     )
+
 
 
 admin.site.register(DocumentoExpediente)

@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 from django.conf import settings
+from django.utils import timezone
 from convocatorias.models import (
     Convocatoria,
     ConvocatoriaIES,
@@ -442,6 +443,15 @@ class ActividadExpediente(models.Model):
             f"{self.expediente} - "
             f"{self.actividad_proceso.nombre}"
         )
+
+    def save(self, *args, **kwargs):
+        if self.estado == self.Estado.COMPLETADA:
+            if self.fecha_completada is None:
+                self.fecha_completada = timezone.now()
+        else:
+            self.fecha_completada = None
+
+        super().save(*args, **kwargs)
 
 class DocumentoExpediente(models.Model):
 
