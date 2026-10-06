@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}
+Mis expedientes | Movilidad Académica
+{% endblock %}
+
+{% block content %}
+
+<section class="seccion">
+    <div class="container">
+
+        <div class="encabezado-seccion">
+            <h1>Mis expedientes de movilidad</h1>
+
+            <p>
+                Consulta el estado actual de tus procesos de movilidad académica.
+            </p>
+        </div>
+
+        {% if expedientes %}
+
+            <div class="row g-4">
+
+                {% for expediente in expedientes %}
+
+                    <div class="col-md-6 col-lg-4">
+
+                        <article class="convocatoria-card">
+
+                            <div class="convocatoria-tipo">
+                                {{ expediente.convocatoria.tipo_movilidad.nombre }}
+                            </div>
+
+                            <h3>
+                                {{ expediente.convocatoria.titulo }}
+                            </h3>
+
+                            <p>
+                                <strong>Estado:</strong>
+                                {{ expediente.get_estado_display }}
+                            </p>
+
+                            {% if expediente.ies_destino %}
+                                <p>
+                                    <strong>IES destino:</strong>
+                                    {{ expediente.ies_destino }}
+                                </p>
+                            {% endif %}
+
+                            <p>
+                                <strong>Fecha de inicio:</strong>
+                                {{ expediente.fecha_inicio|date:"d/m/Y" }}
+                            </p>
+
+                            <a
+                            href="{% url 'expedientes:detalle' expediente.pk %}"
+                            class="btn btn-movilidad"
+                        >
+                            Ver expediente
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+
+                        </article>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-light border">
+                No tienes expedientes de movilidad registrados.
+            </div>
+
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}

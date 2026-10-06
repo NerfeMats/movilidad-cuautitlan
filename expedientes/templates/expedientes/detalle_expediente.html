@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detalle del expediente | Movilidad Académica
+{% endblock %}
+
+{% block content %}
+
+<section class="seccion">
+    <div class="container">
+
+        <div class="encabezado-seccion">
+            <h1>Mi expediente de movilidad</h1>
+
+            <p>
+                Consulta el estado actual y las actividades de tu expediente.
+            </p>
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-lg-4">
+
+                <article class="convocatoria-card">
+
+                    <div class="convocatoria-tipo">
+                        {{ expediente.convocatoria.tipo_movilidad.nombre }}
+                    </div>
+
+                    <h3>
+                        {{ expediente.convocatoria.titulo }}
+                    </h3>
+
+                    <p>
+                        <strong>Estado actual:</strong><br>
+                        {{ expediente.get_estado_display }}
+                    </p>
+
+                    {% if expediente.ies_destino %}
+                        <p>
+                            <strong>IES destino:</strong><br>
+                            {{ expediente.ies_destino }}
+                        </p>
+                    {% endif %}
+
+                    <p>
+                        <strong>Fecha de inicio:</strong><br>
+                        {{ expediente.fecha_inicio|date:"d/m/Y" }}
+                    </p>
+
+                </article>
+
+            </div>
+
+
+            <div class="col-lg-8">
+
+                <h2>Actividades del expediente</h2>
+
+                {% if actividades %}
+
+                    <div class="mt-4">
+
+                        {% for actividad in actividades %}
+
+                            <div class="border rounded p-3 mb-3">
+
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+
+                                    <div>
+
+                                        <h5 class="mb-1">
+                                            {{ actividad.actividad_proceso.nombre }}
+                                        </h5>
+
+                                        {% if actividad.actividad_proceso.descripcion %}
+                                            <p class="mb-2">
+                                                {{ actividad.actividad_proceso.descripcion }}
+                                            </p>
+                                        {% endif %}
+
+                                        <small>
+                                            Etapa:
+                                            {{ actividad.actividad_proceso.get_estado_expediente_display }}
+                                        </small>
+
+                                    </div>
+
+                                    <div>
+
+                                        {% if actividad.estado == "COMPLETADA" %}
+                                            <span class="badge bg-success">
+                                                Completada
+                                            </span>
+
+                                        {% elif actividad.estado == "PENDIENTE" %}
+                                            <span class="badge bg-secondary">
+                                                Pendiente
+                                            </span>
+
+                                        {% elif actividad.estado == "EN_PROCESO" %}
+                                            <span class="badge bg-primary">
+                                                En proceso
+                                            </span>
+
+                                        {% elif actividad.estado == "EN_REVISION" %}
+                                            <span class="badge bg-warning text-dark">
+                                                En revisión
+                                            </span>
+
+                                        {% elif actividad.estado == "REQUIERE_CORRECCION" %}
+                                            <span class="badge bg-danger">
+                                                Requiere corrección
+                                            </span>
+
+                                        {% elif actividad.estado == "NO_APLICA" %}
+                                            <span class="badge bg-light text-dark border">
+                                                No aplica
+                                            </span>
+
+                                        {% elif actividad.estado == "NO_REGISTRADA" %}
+                                            <span class="badge bg-dark">
+                                                No registrada
+                                            </span>
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                                {% if actividad.fecha_limite %}
+                                    <div class="mt-2">
+                                        <small>
+                                            Fecha límite:
+                                            {{ actividad.fecha_limite|date:"d/m/Y" }}
+                                        </small>
+                                    </div>
+                                {% endif %}
+
+                                {% if actividad.fecha_completada %}
+                                    <div class="mt-2">
+                                        <small>
+                                            Completada:
+                                            {{ actividad.fecha_completada|date:"d/m/Y H:i" }}
+                                        </small>
+                                    </div>
+                                {% endif %}
+
+                                {% if actividad.observaciones %}
+                                    <div class="mt-2">
+                                        <strong>Observaciones:</strong>
+                                        <p class="mb-0">
+                                            {{ actividad.observaciones }}
+                                        </p>
+                                    </div>
+                                {% endif %}
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="alert alert-light border mt-4">
+                        Este expediente todavía no tiene actividades registradas.
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="mt-4">
+            <a
+                href="{% url 'expedientes:lista' %}"
+                class="btn btn-outline-dark"
+            >
+                Volver a mis expedientes
+            </a>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

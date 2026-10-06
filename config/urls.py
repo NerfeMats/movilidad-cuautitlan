@@ -26,7 +26,11 @@ urlpatterns = [
         "convocatorias/",
         include("convocatorias.urls"),
     ),
-     path("", include("core.urls")),
+    path("", include("core.urls")),
+    path(
+    "expedientes/",
+    include("expedientes.urls"),
+),
 
 ]
 

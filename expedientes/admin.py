@@ -1,5 +1,5 @@
 from django.contrib import admin
-
+from django import forms
 # Register your models here.
 from django.contrib import admin
 
@@ -11,9 +11,43 @@ from .models import (
     HistorialExpediente,
 )
 
+class ActividadExpedienteAdminForm(forms.ModelForm):
 
+    class Meta:
+        model = ActividadExpediente
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        actividad = self.instance
+
+        if (
+            actividad
+            and actividad.pk
+            and actividad.expediente_id
+            and actividad.actividad_proceso_id
+        ):
+            etapa_actividad = (
+                actividad.actividad_proceso.estado_expediente
+            )
+
+            etapa_actual = actividad.expediente.estado
+
+            if etapa_actividad != etapa_actual:
+
+                for campo in (
+                    "estado",
+                    "fecha_limite",
+                    "observaciones",
+                ):
+                    if campo in self.fields:
+                        self.fields[campo].disabled = True
 class ActividadExpedienteInline(admin.TabularInline):
+
     model = ActividadExpediente
+    form = ActividadExpedienteAdminForm
+
     extra = 0
     can_delete = False
 
@@ -27,6 +61,7 @@ class ActividadExpedienteInline(admin.TabularInline):
 
     readonly_fields = (
         "actividad_proceso",
+        "fecha_completada",
     )
 
 
@@ -65,17 +100,48 @@ class ExpedienteMovilidadAdmin(admin.ModelAdmin):
 
         if es_nuevo:
             obj.crear_actividades_iniciales()
+
+            HistorialExpediente.objects.create(
+                expediente=obj,
+                usuario=request.user,
+                accion="Creación de expediente",
+                descripcion=(
+                    f"Se creó el expediente en estado "
+                    f"{obj.get_estado_display()}."
+                ),
+                estado_anterior="",
+                estado_nuevo=obj.estado,
+            )
     
     @admin.display(
     boolean=True,
     description="Listo para avanzar",
-)
+     )
     def listo_para_avanzar(self, obj):
         return obj.puede_avanzar()
 
     actions = [
     "avanzar_estado_seleccionados",
     ]
+
+    def get_readonly_fields(self, request, obj=None):
+
+        if obj:
+            return (
+                "estado",
+                "tipo_alta",
+                "estado_inicial",
+                "origen",
+                "fecha_inicio",
+                "fecha_actualizacion",
+                "fecha_cierre",
+            )
+
+        return (
+            "fecha_inicio",
+            "fecha_actualizacion",
+            "fecha_cierre",
+        )
 
     @admin.action(description="Avanzar estado de los expedientes seleccionados")
     def avanzar_estado_seleccionados(self, request, queryset):
@@ -129,9 +195,11 @@ class ActividadProcesoAdmin(admin.ModelAdmin):
         "activo",
     )
 
-
+    
 @admin.register(ActividadExpediente)
 class ActividadExpedienteAdmin(admin.ModelAdmin):
+
+    form = ActividadExpedienteAdminForm
 
     list_display = (
         "expediente",
@@ -144,7 +212,57 @@ class ActividadExpedienteAdmin(admin.ModelAdmin):
         "estado",
     )
 
+    readonly_fields = (
+        "actividad_proceso",
+        "expediente",
+        "fecha_completada",
+    )
+
 
 
 admin.site.register(DocumentoExpediente)
-admin.site.register(HistorialExpediente)
+@admin.register(HistorialExpediente)
+class HistorialExpedienteAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "expediente",
+        "usuario",
+        "accion",
+        "estado_anterior",
+        "estado_nuevo",
+        "fecha",
+    )
+
+    list_filter = (
+        "accion",
+        "estado_anterior",
+        "estado_nuevo",
+        "fecha",
+    )
+
+    search_fields = (
+        "expediente__alumno__username",
+        "expediente__alumno__first_name",
+        "expediente__alumno__last_name",
+        "accion",
+        "descripcion",
+    )
+
+    readonly_fields = (
+        "expediente",
+        "usuario",
+        "accion",
+        "descripcion",
+        "estado_anterior",
+        "estado_nuevo",
+        "fecha",
+    )
+
+    ordering = (
+        "-fecha",
+    )
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
+        return False
