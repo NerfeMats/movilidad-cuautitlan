@@ -34,13 +34,14 @@ class ActividadExpedienteInline(admin.TabularInline):
 class ExpedienteMovilidadAdmin(admin.ModelAdmin):
 
     list_display = (
-        "alumno",
-        "convocatoria",
-        "estado",
-        "tipo_alta",
-        "origen",
-        "fecha_inicio",
-    )
+    "alumno",
+    "convocatoria",
+    "estado",
+    "tipo_alta",
+    "origen",
+    "fecha_inicio",
+    "listo_para_avanzar",
+)
 
     list_filter = (
         "estado",
@@ -64,7 +65,44 @@ class ExpedienteMovilidadAdmin(admin.ModelAdmin):
 
         if es_nuevo:
             obj.crear_actividades_iniciales()
+    
+    @admin.display(
+    boolean=True,
+    description="Listo para avanzar",
+)
+    def listo_para_avanzar(self, obj):
+        return obj.puede_avanzar()
 
+    actions = [
+    "avanzar_estado_seleccionados",
+    ]
+
+    @admin.action(description="Avanzar estado de los expedientes seleccionados")
+    def avanzar_estado_seleccionados(self, request, queryset):
+
+        avanzados = 0
+        no_avanzados = 0
+
+        for expediente in queryset:
+
+            if expediente.avanzar_estado(usuario=request.user):
+                avanzados += 1
+            else:
+                no_avanzados += 1
+
+        if avanzados:
+            self.message_user(
+                request,
+                f"{avanzados} expediente(s) avanzaron de estado.",
+                level="SUCCESS",
+            )
+
+        if no_avanzados:
+            self.message_user(
+                request,
+                f"{no_avanzados} expediente(s) no pudieron avanzar.",
+                level="WARNING",
+            )
 
 @admin.register(ActividadProceso)
 class ActividadProcesoAdmin(admin.ModelAdmin):

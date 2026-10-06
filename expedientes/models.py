@@ -60,6 +60,7 @@ class ExpedienteMovilidad(models.Model):
             "Cancelado",
         )
 
+
     class TipoAlta(models.TextChoices):
         NORMAL = "NORMAL", "Alta normal"
 
@@ -94,6 +95,18 @@ class ExpedienteMovilidad(models.Model):
         Estado.HOMOLOGACION: 8,
         Estado.CERRADO: 9,
     }
+
+    SIGUIENTE_ESTADO = {
+        Estado.INICIADO: Estado.INTEGRANDO_EXPEDIENTE,
+        Estado.INTEGRANDO_EXPEDIENTE: Estado.EN_REVISION,
+        Estado.EN_REVISION: Estado.ENVIADO_DAAE,
+        Estado.ENVIADO_DAAE: Estado.POSTULACION_IES,
+        Estado.POSTULACION_IES: Estado.PREPARACION_MOVILIDAD,
+        Estado.PREPARACION_MOVILIDAD: Estado.EN_MOVILIDAD,
+        Estado.EN_MOVILIDAD: Estado.HOMOLOGACION,
+        Estado.HOMOLOGACION: Estado.CERRADO,
+    }
+
     alumno = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -262,7 +275,59 @@ class ExpedienteMovilidad(models.Model):
                     "estado": estado_actividad,
                 },
             )
-  
+    def puede_avanzar(self):
+            # Un estado terminal no puede avanzar.
+        if self.estado not in self.SIGUIENTE_ESTADO:
+            return False
+
+        actividades_obligatorias = self.actividades.filter(
+            actividad_proceso__estado_expediente=self.estado,
+            actividad_proceso__obligatorio=True,
+        )
+
+        estados_validos = [
+            ActividadExpediente.Estado.COMPLETADA,
+            ActividadExpediente.Estado.NO_APLICA,
+        ]
+
+        return not actividades_obligatorias.exclude(
+            estado__in=estados_validos
+        ).exists()
+    
+    def avanzar_estado(self, usuario=None):
+
+        if not self.puede_avanzar():
+            return False
+
+        estado_anterior = self.estado
+
+        estado_nuevo = self.SIGUIENTE_ESTADO.get(
+            self.estado
+        )
+
+        if estado_nuevo is None:
+            return False
+
+        self.estado = estado_nuevo
+
+        if estado_nuevo == self.Estado.CERRADO:
+            self.fecha_cierre = timezone.now()
+
+        self.save()
+
+        HistorialExpediente.objects.create(
+            expediente=self,
+            usuario=usuario,
+            accion="Avance de estado",
+            descripcion=(
+                f"El expediente avanzó de "
+                f"{estado_anterior} a {estado_nuevo}."
+            ),
+            estado_anterior=estado_anterior,
+            estado_nuevo=estado_nuevo,
+        )
+
+        return True
 class ActividadProceso(models.Model):
 
     class Etapa(models.TextChoices):
