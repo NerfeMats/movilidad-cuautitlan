@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Ruta de expediente | Responsable{% endblock %}
+{% block content %}
+<style>
+.rm3{background:radial-gradient(ellipse at top,#23674c,#092d27 75%);color:#f3fff9;border-radius:22px;padding:26px;box-shadow:0 20px 35px #0b31263d}
+.rm3 .track{display:grid;grid-template-columns:repeat(9,minmax(84px,1fr));overflow-x:auto;gap:8px;margin:22px 0 12px}
+.rm3 .stop{min-height:120px;background:linear-gradient(140deg,#ffffff27,#ffffff08);border:1px solid #ffffff38;border-radius:16px;backdrop-filter:blur(10px);color:white;text-align:center;padding:15px 8px;font-size:12px;cursor:pointer;box-shadow:0 7px 0 #001e17,0 13px 20px #0005}
+.rm3 .stop .sphere{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(145deg,#348969,#0d4735);border:2px solid #86cbaa;box-shadow:0 7px 0 #05261c}
+.rm3 .stop.recorrida .sphere{background:linear-gradient(145deg,#2bcb8d,#126542)}
+.rm3 .stop.actual .sphere{background:linear-gradient(145deg,#ffebae,#b88026);border-color:#fff1ba;color:#2a250f;box-shadow:0 6px 0 #61400d,0 0 22px #ffcb64}
+.rm3 .stop.selected{outline:3px solid #e7c780;outline-offset:1px}
+.rm3 .detail{background:#ffffff18;border:1px solid #ffffff44;border-radius:16px;padding:18px;min-height:90px}
+.rm3 .detail p{margin:0 0 8px}.rm3 .detail article{border-top:1px solid #ffffff35;padding:10px 0}
+</style>
+<section class="seccion"><div class="container">
+<a href="{% url 'expedientes:panel_responsable' %}" class="btn btn-outline-secondary mb-3">← Volver al panel</a>
+<h1>Ruta de movilidad — {{ expediente.alumno.get_full_name|default:expediente.alumno.username }}</h1>
+<p>{{ expediente.convocatoria.titulo }} · Estado real: <strong>{{ expediente.get_estado_display }}</strong></p>
+<div class="rm3" id="ruta-responsable">
+<p class="mb-1">MAPA DE SEGUIMIENTO · SOLO LECTURA</p>
+<h2 style="color:white">Usted está aquí: {{ expediente.get_estado_display }}</h2>
+{% if expediente.estado == "CANCELADO" %}<p>Expediente cancelado. La ruta no está activa.</p>{% endif %}
+<div class="track" role="group" aria-label="Estaciones del expediente">
+{% for e in estaciones %}
+<button type="button" class="stop {{ e.situacion }}{% if e.situacion == 'actual' %} selected{% endif %}" data-target="panel-{{ forloop.counter }}" aria-pressed="{% if e.situacion == 'actual' %}true{% else %}false{% endif %}">
+<span class="sphere">{{ forloop.counter }}</span>{{ e.nombre }}</button>
+{% endfor %}
+</div>
+{% for e in estaciones %}
+<div id="panel-{{ forloop.counter }}" class="detail" {% if e.situacion != "actual" and expediente.estado != "CANCELADO" %}hidden{% elif expediente.estado == "CANCELADO" and not forloop.first %}hidden{% endif %}>
+<h3 style="color:white;font-size:1.15rem">{{ e.nombre }}</h3>
+{% for a in e.actividades %}
+<article><p><strong>{{ a.actividad_proceso.nombre }}</strong> — {{ a.get_estado_display }}</p>
+<p>Responsable: {{ a.actividad_proceso.get_responsable_display }}</p>
+{% if a.fecha_limite %}<p>Fecha límite: {{ a.fecha_limite|date:"d/m/Y" }}</p>{% endif %}
+{% if a.observaciones %}<p>Observaciones: {{ a.observaciones }}</p>{% endif %}</article>
+{% empty %}<p>Sin actividades registradas para esta etapa.</p>{% endfor %}
+</div>
+{% endfor %}
+<p class="mt-3 mb-0">Listo para avanzar según las reglas actuales: <strong>{% if puede_avanzar %}Sí{% else %}No{% endif %}</strong>. Etapa recorrida no equivale necesariamente a evidencia de actividades completadas.</p>
+</div></div></section>
+<script>
+(()=>{const r=document.getElementById("ruta-responsable");if(!r)return;const buttons=[...r.querySelectorAll("[data-target]")];for(const b of buttons)b.addEventListener("click",()=>{for(const x of buttons){let selected=x===b;x.classList.toggle("selected",selected);x.setAttribute("aria-pressed",String(selected));document.getElementById(x.dataset.target).hidden=!selected}});})();
+</script>
+{% endblock %}

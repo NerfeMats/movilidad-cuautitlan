@@ -1,188 +1,89 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}
-Detalle del expediente | Movilidad Académica
-{% endblock %}
+{% block title %}Detalle del expediente | Movilidad Académica{% endblock %}
 
 {% block content %}
-
+<link rel="stylesheet" href="{% static 'expedientes/mapa_3d.css' %}">
 <section class="seccion">
-    <div class="container">
+  <div class="container">
+    <header class="encabezado-seccion">
+      <h1>Mi expediente de movilidad</h1>
+      <p>Consulta tu etapa actual, las actividades y los siguientes pasos.</p>
+    </header>
 
-        <div class="encabezado-seccion">
-            <h1>Mi expediente de movilidad</h1>
-
-            <p>
-                Consulta el estado actual y las actividades de tu expediente.
-            </p>
-        </div>
-
-        <div class="row g-4">
-
-            <div class="col-lg-4">
-
-                <article class="convocatoria-card">
-
-                    <div class="convocatoria-tipo">
-                        {{ expediente.convocatoria.tipo_movilidad.nombre }}
-                    </div>
-
-                    <h3>
-                        {{ expediente.convocatoria.titulo }}
-                    </h3>
-
-                    <p>
-                        <strong>Estado actual:</strong><br>
-                        {{ expediente.get_estado_display }}
-                    </p>
-
-                    {% if expediente.ies_destino %}
-                        <p>
-                            <strong>IES destino:</strong><br>
-                            {{ expediente.ies_destino }}
-                        </p>
-                    {% endif %}
-
-                    <p>
-                        <strong>Fecha de inicio:</strong><br>
-                        {{ expediente.fecha_inicio|date:"d/m/Y" }}
-                    </p>
-
-                </article>
-
+    <div class="row g-4 mb-4">
+      <div class="col-lg-4">
+        <article class="convocatoria-card h-100">
+          <div class="convocatoria-tipo">{{ expediente.convocatoria.tipo_movilidad.nombre }}</div>
+          <h3>{{ expediente.convocatoria.titulo }}</h3>
+          <p><strong>Estado actual:</strong><br>{{ expediente.get_estado_display }}</p>
+          {% if expediente.ies_destino %}<p><strong>IES destino:</strong><br>{{ expediente.ies_destino }}</p>{% endif %}
+          <p><strong>Fecha de inicio:</strong><br>{{ expediente.fecha_inicio|date:"d/m/Y" }}</p>
+          {% if cancelado %}<p class="alert alert-warning mb-0">El expediente está cancelado. Las estaciones se muestran únicamente como referencia.</p>{% endif %}
+        </article>
+      </div>
+      <div class="col-lg-8">
+        <section class="mov3d" aria-label="Mapa de seguimiento de movilidad" id="mapa-movilidad">
+          <div class="mov3d-head">
+            <div><div class="mov3d-eyebrow">RUTA DE MOVILIDAD ACADÉMICA</div><h2>Tu recorrido</h2>
+            <p>Selecciona una estación para consultar sus actividades.</p></div>
+            <div class="mov3d-glass mov3d-current">{% if cancelado %}EXPEDIENTE CANCELADO{% else %}USTED ESTÁ AQUÍ <strong>{{ expediente.get_estado_display }}</strong>{% endif %}</div>
+          </div>
+          <div class="mov3d-scene" aria-label="Estaciones de movilidad">
+            <div class="mov3d-rail" aria-hidden="true"></div>
+            <div class="mov3d-stations" role="group" aria-label="Seleccionar etapa">
+              {% for estacion in estaciones %}
+              <button type="button" class="mov3d-station{% if estacion.situacion == 'actual' %} is-current{% elif estacion.situacion == 'recorrida' %} is-passed{% elif estacion.situacion == 'cancelada' %} is-cancelled{% endif %}"
+                  data-estacion="{{ estacion.codigo }}" data-nombre="{{ estacion.nombre }}"
+                  aria-pressed="{% if estacion.situacion == 'actual' %}true{% else %}false{% endif %}">
+                <span class="mov3d-pedestal"><span class="mov3d-disc">{% if estacion.situacion == 'recorrida' %}✓{% else %}{{ estacion.numero }}{% endif %}</span></span>
+                <span class="mov3d-name">{{ estacion.nombre }}</span>
+                {% if estacion.situacion == 'actual' %}<span class="mov3d-you">● Aquí</span>{% endif %}
+              </button>
+              {% endfor %}
             </div>
-
-
-            <div class="col-lg-8">
-
-                <h2>Actividades del expediente</h2>
-
-                {% if actividades %}
-
-                    <div class="mt-4">
-
-                        {% for actividad in actividades %}
-
-                            <div class="border rounded p-3 mb-3">
-
-                                <div class="d-flex justify-content-between align-items-start gap-3">
-
-                                    <div>
-
-                                        <h5 class="mb-1">
-                                            {{ actividad.actividad_proceso.nombre }}
-                                        </h5>
-
-                                        {% if actividad.actividad_proceso.descripcion %}
-                                            <p class="mb-2">
-                                                {{ actividad.actividad_proceso.descripcion }}
-                                            </p>
-                                        {% endif %}
-
-                                        <small>
-                                            Etapa:
-                                            {{ actividad.actividad_proceso.get_estado_expediente_display }}
-                                        </small>
-
-                                    </div>
-
-                                    <div>
-
-                                        {% if actividad.estado == "COMPLETADA" %}
-                                            <span class="badge bg-success">
-                                                Completada
-                                            </span>
-
-                                        {% elif actividad.estado == "PENDIENTE" %}
-                                            <span class="badge bg-secondary">
-                                                Pendiente
-                                            </span>
-
-                                        {% elif actividad.estado == "EN_PROCESO" %}
-                                            <span class="badge bg-primary">
-                                                En proceso
-                                            </span>
-
-                                        {% elif actividad.estado == "EN_REVISION" %}
-                                            <span class="badge bg-warning text-dark">
-                                                En revisión
-                                            </span>
-
-                                        {% elif actividad.estado == "REQUIERE_CORRECCION" %}
-                                            <span class="badge bg-danger">
-                                                Requiere corrección
-                                            </span>
-
-                                        {% elif actividad.estado == "NO_APLICA" %}
-                                            <span class="badge bg-light text-dark border">
-                                                No aplica
-                                            </span>
-
-                                        {% elif actividad.estado == "NO_REGISTRADA" %}
-                                            <span class="badge bg-dark">
-                                                No registrada
-                                            </span>
-                                        {% endif %}
-
-                                    </div>
-
-                                </div>
-
-                                {% if actividad.fecha_limite %}
-                                    <div class="mt-2">
-                                        <small>
-                                            Fecha límite:
-                                            {{ actividad.fecha_limite|date:"d/m/Y" }}
-                                        </small>
-                                    </div>
-                                {% endif %}
-
-                                {% if actividad.fecha_completada %}
-                                    <div class="mt-2">
-                                        <small>
-                                            Completada:
-                                            {{ actividad.fecha_completada|date:"d/m/Y H:i" }}
-                                        </small>
-                                    </div>
-                                {% endif %}
-
-                                {% if actividad.observaciones %}
-                                    <div class="mt-2">
-                                        <strong>Observaciones:</strong>
-                                        <p class="mb-0">
-                                            {{ actividad.observaciones }}
-                                        </p>
-                                    </div>
-                                {% endif %}
-
-                            </div>
-
-                        {% endfor %}
-
-                    </div>
-
-                {% else %}
-
-                    <div class="alert alert-light border mt-4">
-                        Este expediente todavía no tiene actividades registradas.
-                    </div>
-
-                {% endif %}
-
-            </div>
-
-        </div>
-
-        <div class="mt-4">
-            <a
-                href="{% url 'expedientes:lista' %}"
-                class="btn btn-outline-dark"
-            >
-                Volver a mis expedientes
-            </a>
-        </div>
-
+          </div>
+          <div class="mov3d-legend"><span>● Etapa superada</span><span>◆ Etapa actual</span><span>○ Etapa futura</span></div>
+          <div class="mov3d-footer mov3d-glass">
+            <span>Etapa seleccionada: <strong id="mov3d-selected">{{ expediente.get_estado_display }}</strong></span>
+            <span>{% if puede_avanzar and not cancelado %}Actividades obligatorias habilitan el avance{% elif cancelado %}Sin avance disponible{% else %}Avance sujeto a validación{% endif %}</span>
+          </div>
+        </section>
+      </div>
     </div>
-</section>
 
+    <section id="mov3d-activities" aria-labelledby="mov3d-activity-heading">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <h2 id="mov3d-activity-heading" class="mb-0">Actividades del expediente</h2>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="mov3d-show-all">Mostrar todas las actividades</button>
+      </div>
+      <div id="mov3d-empty-stage" class="alert alert-light border" hidden>Esta estación no tiene actividades registradas en el expediente.</div>
+      {% if actividades %}
+        <div id="mov3d-activities-list">
+          {% for actividad in actividades %}
+            <article class="border rounded p-3 mb-3 mov3d-activity" data-etapa="{{ actividad.actividad_proceso.estado_expediente }}">
+              <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                <div>
+                  <h5 class="mb-1">{{ actividad.actividad_proceso.nombre }}</h5>
+                  {% if actividad.actividad_proceso.descripcion %}<p class="mb-2">{{ actividad.actividad_proceso.descripcion }}</p>{% endif %}
+                  <small>Etapa: {{ actividad.actividad_proceso.get_estado_expediente_display }}</small><br>
+                  <small>Responsable: {{ actividad.actividad_proceso.get_responsable_display }}</small>
+                </div>
+                <span class="badge {% if actividad.estado == 'COMPLETADA' %}bg-success{% elif actividad.estado == 'PENDIENTE' %}bg-secondary{% elif actividad.estado == 'EN_PROCESO' %}bg-primary{% elif actividad.estado == 'EN_REVISION' %}bg-warning text-dark{% elif actividad.estado == 'REQUIERE_CORRECCION' %}bg-danger{% elif actividad.estado == 'NO_APLICA' %}bg-light text-dark border{% else %}bg-dark{% endif %}">{{ actividad.get_estado_display }}</span>
+              </div>
+              {% if actividad.fecha_limite %}<div class="mt-2"><small>Fecha límite: {{ actividad.fecha_limite|date:"d/m/Y" }}</small></div>{% endif %}
+              {% if actividad.fecha_completada %}<div class="mt-2"><small>Completada: {{ actividad.fecha_completada|date:"d/m/Y H:i" }}</small></div>{% endif %}
+              {% if actividad.observaciones %}<div class="mt-2"><strong>Observaciones:</strong><p class="mb-0">{{ actividad.observaciones }}</p></div>{% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert alert-light border">Este expediente todavía no tiene actividades registradas.</div>
+      {% endif %}
+    </section>
+    <div class="mt-4"><a href="{% url 'expedientes:lista' %}" class="btn btn-outline-dark">Volver a mis expedientes</a></div>
+  </div>
+</section>
+<script defer src="{% static 'expedientes/mapa_3d.js' %}"></script>
 {% endblock %}

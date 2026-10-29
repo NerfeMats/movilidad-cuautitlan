@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Seguimiento de movilidad | Responsable{% endblock %}
+{% block content %}
+<section class="seccion"><div class="container">
+<h1>Seguimiento de movilidad</h1>
+<p>Vista de consulta para personal autorizado. Las modificaciones se realizan desde Django Admin.</p>
+<div class="table-responsive">
+<table class="table table-striped align-middle">
+<thead><tr><th>Alumno</th><th>Convocatoria</th><th>Estado</th><th>Origen</th><th>Ruta</th></tr></thead>
+<tbody>{% for e in expedientes %}
+<tr><td>{{ e.alumno.get_full_name|default:e.alumno.username }}</td><td>{{ e.convocatoria.titulo }}</td><td>{{ e.get_estado_display }}</td><td>{{ e.get_origen_display }}</td><td><a class="btn btn-sm btn-outline-success" href="{% url 'expedientes:ruta_responsable' e.pk %}">Ver recorrido</a></td></tr>
+{% empty %}<tr><td colspan="5">No hay expedientes.</td></tr>{% endfor %}</tbody>
+</table></div></div></section>
+{% endblock %}

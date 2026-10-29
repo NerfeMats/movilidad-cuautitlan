@@ -19,3 +19,11 @@ urlpatterns = [
     ),
 ]
 
+
+# Panel del responsable de movilidad
+from . import panel_responsable
+
+urlpatterns += [
+    path("responsable/", panel_responsable.panel_responsable, name="panel_responsable"),
+    path("responsable/<int:pk>/", panel_responsable.ruta_responsable, name="ruta_responsable"),
+]
