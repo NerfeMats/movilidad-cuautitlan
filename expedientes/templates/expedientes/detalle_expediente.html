@@ -35,7 +35,7 @@
             <div class="mov3d-stations" role="group" aria-label="Seleccionar etapa">
               {% for estacion in estaciones %}
               <button type="button" class="mov3d-station{% if estacion.situacion == 'actual' %} is-current{% elif estacion.situacion == 'recorrida' %} is-passed{% elif estacion.situacion == 'cancelada' %} is-cancelled{% endif %}"
-                  data-estacion="{{ estacion.codigo }}" data-nombre="{{ estacion.nombre }}"
+                  data-estacion="{{ estacion.codigo }}" data-nombre="{{ estacion.nombre }}" data-situacion="{{ estacion.situacion }}"
                   aria-pressed="{% if estacion.situacion == 'actual' %}true{% else %}false{% endif %}">
                 <span class="mov3d-pedestal"><span class="mov3d-disc">{% if estacion.situacion == 'recorrida' %}✓{% else %}{{ estacion.numero }}{% endif %}</span></span>
                 <span class="mov3d-name">{{ estacion.nombre }}</span>
@@ -44,10 +44,14 @@
               {% endfor %}
             </div>
           </div>
-          <div class="mov3d-legend"><span>● Etapa superada</span><span>◆ Etapa actual</span><span>○ Etapa futura</span></div>
-          <div class="mov3d-footer mov3d-glass">
-            <span>Etapa seleccionada: <strong id="mov3d-selected">{{ expediente.get_estado_display }}</strong></span>
-            <span>{% if puede_avanzar and not cancelado %}Actividades obligatorias habilitan el avance{% elif cancelado %}Sin avance disponible{% else %}Avance sujeto a validación{% endif %}</span>
+          <div class="mov3d-legend"><span>● Etapa anterior (no acredita cumplimiento documental)</span><span>◆ Etapa actual</span><span>○ Etapa futura</span></div>
+          <div class="mov3d-footer mov3d-glass" aria-live="polite">
+            <div><span>Etapa consultada:</span> <strong id="mov3d-selected">{{ expediente.get_estado_display }}</strong>
+              <div id="mov3d-stage-context" class="mov3d-context">{% if cancelado %}Expediente cancelado: consulta histórica, sin avance disponible.{% else %}Esta es la etapa actual del expediente.{% endif %}</div>
+            </div>
+            <div class="mov3d-progress-status"><span>Estado real: <strong>{{ expediente.get_estado_display }}</strong></span>
+              <div>{% if cancelado %}Sin avance disponible: expediente cancelado.{% elif puede_avanzar %}Las condiciones de la etapa actual permiten solicitar avance, sujeto a revisión.{% else %}La etapa actual tiene condiciones pendientes para avanzar.{% endif %}</div>
+            </div>
           </div>
         </section>
       </div>
@@ -58,7 +62,7 @@
         <h2 id="mov3d-activity-heading" class="mb-0">Actividades del expediente</h2>
         <button type="button" class="btn btn-outline-secondary btn-sm" id="mov3d-show-all">Mostrar todas las actividades</button>
       </div>
-      <div id="mov3d-empty-stage" class="alert alert-light border" hidden>Esta estación no tiene actividades registradas en el expediente.</div>
+      <div id="mov3d-empty-stage" class="alert alert-light border" hidden>No hay actividades registradas en el expediente para esta estación. Esto no acredita que se hayan completado.</div>
       {% if actividades %}
         <div id="mov3d-activities-list">
           {% for actividad in actividades %}
@@ -68,7 +72,8 @@
                   <h5 class="mb-1">{{ actividad.actividad_proceso.nombre }}</h5>
                   {% if actividad.actividad_proceso.descripcion %}<p class="mb-2">{{ actividad.actividad_proceso.descripcion }}</p>{% endif %}
                   <small>Etapa: {{ actividad.actividad_proceso.get_estado_expediente_display }}</small><br>
-                  <small>Responsable: {{ actividad.actividad_proceso.get_responsable_display }}</small>
+                  <small>Responsable: {{ actividad.actividad_proceso.get_responsable_display }}</small><br>
+                  <small>Obligatoria: {% if actividad.actividad_proceso.obligatorio %}Sí{% else %}No{% endif %}</small>
                 </div>
                 <span class="badge {% if actividad.estado == 'COMPLETADA' %}bg-success{% elif actividad.estado == 'PENDIENTE' %}bg-secondary{% elif actividad.estado == 'EN_PROCESO' %}bg-primary{% elif actividad.estado == 'EN_REVISION' %}bg-warning text-dark{% elif actividad.estado == 'REQUIERE_CORRECCION' %}bg-danger{% elif actividad.estado == 'NO_APLICA' %}bg-light text-dark border{% else %}bg-dark{% endif %}">{{ actividad.get_estado_display }}</span>
               </div>
