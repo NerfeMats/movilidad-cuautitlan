@@ -1,0 +1,32 @@
+{% load documentos_presentacion %}
+{% with aprobados=documentos|documentos_aprobados pendientes=documentos|documentos_pendientes correcciones=documentos|documentos_correccion %}
+<div class="doc-panel__groups">
+  {% if aprobados %}
+  <section class="doc-panel__group" aria-label="Documentos aprobados">
+    <h5 class="doc-panel__group-title">Documentos aprobados <span class="doc-panel__count">{{ aprobados|length }}</span></h5>
+    {% for documento in aprobados %}
+      {% include "expedientes/_documento_tarjeta.html" with documento=documento tipo="aprobado" %}
+    {% endfor %}
+  </section>
+  {% endif %}
+  {% if pendientes %}
+  <section class="doc-panel__group" aria-label="Documentos pendientes de revisión">
+    <h5 class="doc-panel__group-title">Pendientes de revisión <span class="doc-panel__count">{{ pendientes|length }}</span></h5>
+    {% for documento in pendientes %}
+      {% include "expedientes/_documento_tarjeta.html" with documento=documento tipo="pendiente" %}
+    {% endfor %}
+  </section>
+  {% endif %}
+  {% if correcciones %}
+  <section class="doc-panel__group" aria-label="Documentos con observaciones">
+    <h5 class="doc-panel__group-title">Requieren atención <span class="doc-panel__count">{{ correcciones|length }}</span></h5>
+    {% for documento in correcciones %}
+      {% include "expedientes/_documento_tarjeta.html" with documento=documento tipo="correccion" %}
+    {% endfor %}
+  </section>
+  {% endif %}
+  {% if not documentos %}
+    <p class="small text-muted">Sin documentos adjuntos.</p>
+  {% endif %}
+</div>
+{% endwith %}

@@ -1,0 +1,29 @@
+<article class="doc-panel__item doc-panel__item--{{ tipo }}" aria-label="Documento: {{ documento.nombre }}">
+  <div class="doc-panel__item-main">
+    <span class="doc-panel__item-icon" aria-hidden="true">{% if tipo == 'aprobado' %}✓{% elif tipo == 'correccion' %}!{% else %}◷{% endif %}</span>
+    <div class="doc-panel__item-content">
+      <strong class="doc-panel__item-name">{{ documento.nombre }}</strong>
+      <div class="doc-panel__filename">{% if documento.nombre_archivo_original %}{{ documento.nombre_archivo_original }}{% else %}Nombre original del archivo no disponible{% endif %}</div>
+      <div class="doc-panel__item-meta">
+        <span class="doc-panel__status doc-panel__status--{{ tipo }}">{{ documento.get_estado_display }}</span>
+        <span>Registro {{ documento.version }}{% if documento.version == 1 %} (inicial){% endif %}</span>
+        {% if documento.fecha_carga %}<span>Subido {{ documento.fecha_carga|date:"d/m/Y H:i" }}</span>{% endif %}
+      </div>
+      {% if documento.observaciones %}<p class="doc-panel__observaciones"><strong>Observaciones:</strong> {{ documento.observaciones }}</p>{% endif %}
+    </div>
+    {% if documento.archivo.name|slice:':8' == 'privado/' %}
+      <a href="{% url 'expedientes:documento_descargar' documento.pk %}" class="btn btn-sm btn-outline-secondary doc-panel__download">Descargar</a>
+    {% else %}<small>Archivo anterior pendiente de migración segura</small>{% endif %}
+  </div>
+  {% if vista_responsable and perms.expedientes.change_documentoexpediente and tipo == 'pendiente' %}
+    <form method="post" action="{% url 'expedientes:documento_revisar' documento.pk %}" class="doc-panel__form doc-panel__form--revision">
+      {% csrf_token %}
+      <label for="doc-obs-{{ documento.pk }}">Observaciones (obligatorias al solicitar corrección)</label>
+      <textarea id="doc-obs-{{ documento.pk }}" name="observaciones" class="form-control form-control-sm" rows="2"></textarea>
+      <div class="d-flex flex-wrap gap-2">
+        <button type="submit" name="decision" value="aprobar" class="btn btn-sm btn-success">Aprobar</button>
+        <button type="submit" name="decision" value="corregir" class="btn btn-sm btn-outline-danger">Solicitar corrección</button>
+      </div>
+    </form>
+  {% endif %}
+</article>

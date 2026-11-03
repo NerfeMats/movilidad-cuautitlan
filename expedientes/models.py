@@ -570,6 +570,9 @@ class DocumentoExpediente(models.Model):
         upload_to="movilidad/expedientes/",
     )
 
+    # Nombre presentado al usuario; el archivo se guarda con un UUID privado.
+    nombre_archivo_original = models.CharField(max_length=255, blank=True, default="")
+
     estado = models.CharField(
         max_length=30,
         choices=Estado.choices,

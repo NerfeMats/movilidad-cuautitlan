@@ -81,6 +81,8 @@ def cargar_documento(*, usuario, actividad, archivo, nombre):
     es_alumno = usuario.pk == expediente.alumno_id
     if not es_alumno and not _puede_modificar(usuario, expediente, "add"):
         raise PermissionDenied("Sin permiso para aportar documentos")
+    if actividad.estado == ActividadExpediente.Estado.COMPLETADA:
+        raise ValidationError("La actividad completada está en modo de consulta")
     if actividad.actividad_proceso.estado_expediente != expediente.estado:
         raise ValidationError("Solo se pueden aportar documentos a la estación actual")
     if es_alumno and actividad.actividad_proceso.responsable != "ALUMNO":
@@ -89,6 +91,8 @@ def cargar_documento(*, usuario, actividad, archivo, nombre):
     if not nombre or len(nombre) > 200:
         raise ValidationError("Indique un nombre de documento de hasta 200 caracteres")
     sufijo = _validar_archivo(archivo)
+    # Almacenar SOLO el nombre base original, nunca rutas del cliente ni el UUID privado.
+    nombre_original = Path(str(archivo.name).replace("\\", "/")).name.strip()[:255]
     archivo.seek(0)
     storage = almacenamiento_privado()
     ruta = f"{expediente.pk}/{actividad.pk}/{uuid4().hex}{sufijo}"
@@ -99,7 +103,7 @@ def cargar_documento(*, usuario, actividad, archivo, nombre):
             documento = DocumentoExpediente.objects.create(
                 expediente=expediente, actividad=actividad, nombre=nombre,
                 archivo=PREFIJO + guardado, estado=DocumentoExpediente.Estado.CARGADO,
-                version=1,
+                version=1, nombre_archivo_original=nombre_original,
             )
             HistorialExpediente.objects.create(
                 expediente=expediente, usuario=usuario,

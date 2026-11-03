@@ -25,3 +25,9 @@ staticfiles/
 # Sistema operativo
 .DS_Store
 Thumbs.db
+# Documentos privados de expedientes
+/documentos_privados/
+
+# Archivos auxiliares de desarrollo
+/base_actualizacion_15B.zip
+/evidencia_demo_movilidad.pdf

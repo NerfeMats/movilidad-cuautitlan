@@ -88,6 +88,15 @@
                 </div>
               {% endif %}
               {% if actividad.observaciones %}<div class="actividad-card__observaciones"><strong>Observaciones:</strong> <span>{{ actividad.observaciones }}</span></div>{% endif %}
+              <section class="doc-panel" aria-label="Documentos de {{ actividad.actividad_proceso.nombre }}">
+                <h4 class="doc-panel__title">Documentos de la actividad</h4>
+                {% with documentos=actividad.documentos.all %}
+                  {% include "expedientes/_documentos_secciones.html" with documentos=documentos vista_responsable=False %}
+                  {% if actividad.actividad_proceso.estado_expediente == expediente.estado and expediente.estado != 'CANCELADO' and actividad.actividad_proceso.responsable == 'ALUMNO' %}
+                    {% include "expedientes/_documento_formulario.html" with documentos=documentos %}
+                  {% endif %}
+                {% endwith %}
+              </section>
             </article>
           {% endfor %}
         </div>

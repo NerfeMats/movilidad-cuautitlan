@@ -16,3 +16,41 @@
 .actividad-card__fechas {display:flex;flex-wrap:wrap;gap:.45rem 1.4rem;margin-top:.75rem;padding-top:.65rem;border-top:1px solid var(--color-borde,#dbe2df);font-size:.85rem}
 .actividad-card__observaciones {margin-top:.75rem;padding-top:.65rem;border-top:1px solid var(--color-borde,#dbe2df);font-size:.9rem;line-height:1.6;overflow-wrap:anywhere}
 @media(max-width:600px){.actividad-card {padding:1rem}.actividad-card__cabecera{flex-wrap:wrap}.actividad-card__estado{order:-1}}
+
+/* Expediente digital por actividad (15B). */
+.doc-panel{min-width:0;max-width:100%;margin-top:1rem;padding-top:.8rem;border-top:1px solid #dbe2df;overflow-wrap:anywhere}
+.doc-panel__title{font-size:.98rem;margin:0 0 .7rem;font-weight:700}
+.doc-panel__item{padding:.65rem .8rem;margin:.5rem 0;border:1px solid #dbe2df;border-radius:.6rem;background:#f8faf9;line-height:1.5;overflow-wrap:anywhere}
+.doc-panel__item .btn{margin-top:.45rem}
+.doc-panel__form{display:grid;gap:.45rem;max-width:38rem;margin-top:.8rem;padding:.8rem;border-radius:.6rem;background:#f6f8f7}
+.doc-panel__form label{font-size:.85rem;font-weight:600;margin:0}
+.doc-panel__form button{justify-self:start}
+
+
+/* Organización documental por estado (15C). */
+.doc-panel__groups{display:grid;gap:1rem}
+.doc-panel__group{min-width:0}
+.doc-panel__group-title{display:flex;align-items:center;gap:.5rem;font-size:.9rem;font-weight:700;margin:.7rem 0 .4rem}
+.doc-panel__count{display:inline-flex;min-width:1.4rem;justify-content:center;padding:.12rem .4rem;background:#eef1f3;border-radius:999px;font-size:.78rem}
+.doc-panel__item{margin:.4rem 0;padding:.8rem 1rem;background:#fafbfb}
+.doc-panel__item--aprobado{border-color:#9fcfb0;background:#f5fbf6}
+.doc-panel__item--correccion{border-color:#e7b5b5;background:#fff8f7}
+.doc-panel__item--pendiente{border-color:#d5dfe7;background:#f7fafc}
+.doc-panel__item-main{display:flex;align-items:flex-start;gap:.7rem;min-width:0;flex-wrap:wrap}
+.doc-panel__item-icon{width:1.55rem;height:1.55rem;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;background:#edf0f2;color:#43515a;font-weight:700}
+.doc-panel__item--aprobado .doc-panel__item-icon{background:#d9efdf;color:#23613b}
+.doc-panel__item--correccion .doc-panel__item-icon{background:#f9dbdb;color:#932e32}
+.doc-panel__item-content{flex:1 1 14rem;min-width:0}
+.doc-panel__item-name,.doc-panel__filename{overflow-wrap:anywhere}
+.doc-panel__filename{font-size:.85rem;color:#59666b;margin-top:.15rem}
+.doc-panel__item-meta{display:flex;gap:.5rem .8rem;flex-wrap:wrap;margin-top:.35rem;font-size:.78rem;color:#58666c}
+.doc-panel__status{display:inline-block;border-radius:999px;padding:.1rem .5rem;font-weight:700}
+.doc-panel__status--aprobado{background:#deefdf;color:#215a38}
+.doc-panel__status--pendiente{background:#e5edf5;color:#2e536d}
+.doc-panel__status--correccion{background:#f8dcdc;color:#922d32}
+.doc-panel__download{align-self:center;margin:0!important}
+.doc-panel__observaciones{margin:.5rem 0 0;font-size:.86rem}
+.doc-panel__upload{margin-top:.85rem;border:1px solid #dbe2df;border-radius:.6rem;padding:.65rem .8rem}
+.doc-panel__upload summary{cursor:pointer;font-weight:600;font-size:.87rem}
+.doc-panel__hint{font-size:.79rem;color:#59666b;margin:.55rem 0 0}
+.doc-panel__form--revision{margin-top:.65rem;max-width:100%}

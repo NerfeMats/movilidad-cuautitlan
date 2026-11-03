@@ -1,0 +1,14 @@
+{% if actividad.estado != 'COMPLETADA' %}
+<details class="doc-panel__upload" {% if not documentos %}open{% endif %}>
+  <summary>{% if documentos %}Adjuntar otro documento{% else %}Adjuntar documento{% endif %}</summary>
+  <p class="doc-panel__hint">Cada archivo se registra como evidencia independiente. El control de nuevas versiones de una misma evidencia todavía no está implementado.</p>
+  <form method="post" enctype="multipart/form-data" action="{% url 'expedientes:documento_cargar' actividad.pk %}" class="doc-panel__form">
+    {% csrf_token %}
+    <label for="doc-nombre-{{ actividad.pk }}">Nombre de la evidencia</label>
+    <input id="doc-nombre-{{ actividad.pk }}" class="form-control form-control-sm" name="nombre" maxlength="200" required>
+    <label for="doc-archivo-{{ actividad.pk }}">Archivo (PDF, PNG o JPG; máximo 10 MB)</label>
+    <input id="doc-archivo-{{ actividad.pk }}" class="form-control form-control-sm" type="file" name="archivo" accept=".pdf,.png,.jpg,.jpeg" required>
+    <button type="submit" class="btn btn-sm btn-primary">Adjuntar documento</button>
+  </form>
+</details>
+{% endif %}

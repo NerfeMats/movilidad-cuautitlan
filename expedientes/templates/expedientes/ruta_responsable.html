@@ -40,6 +40,17 @@
     {% if a.fecha_completada %}<span><strong>Completada:</strong> {{ a.fecha_completada|date:"d/m/Y H:i" }}</span>{% endif %}
   </div>
   {% if a.observaciones %}<p class="rm3-actividad__observaciones"><strong>Observaciones:</strong> {{ a.observaciones }}</p>{% endif %}
+  <section class="doc-panel" aria-label="Documentos de {{ a.actividad_proceso.nombre }}">
+    <h5 class="doc-panel__title">Expediente documental de la actividad</h5>
+    {% if perms.expedientes.view_documentoexpediente %}
+      {% with documentos=a.documentos.all %}
+        {% include "expedientes/_documentos_secciones.html" with documentos=documentos vista_responsable=True %}
+        {% if a.actividad_proceso.estado_expediente == expediente.estado and perms.expedientes.add_documentoexpediente and expediente.estado != 'CANCELADO' %}
+          {% include "expedientes/_documento_formulario.html" with actividad=a documentos=documentos %}
+        {% endif %}
+      {% endwith %}
+    {% else %}<p class="small text-muted">No tienes permiso para consultar los documentos.</p>{% endif %}
+  </section>
 </article>
 {% empty %}
 <p class="rm3-actividades__vacia">No hay actividades registradas para esta etapa; esto no acredita su cumplimiento.</p>
