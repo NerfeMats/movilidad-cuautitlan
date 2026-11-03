@@ -1,50 +1,28 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Convocatorias de movilidad</title>
-</head>
-
-<body>
-
-    <h1>Convocatorias de movilidad</h1>
-
-    {% for convocatoria in convocatorias %}
-
-        <article>
-
-            <h2>
-                <a href="{% url 'convocatorias:detalle' convocatoria.pk %}">
-                    {{ convocatoria.titulo }}
-                </a>
-            </h2>
-
-            <p>
-                {{ convocatoria.tipo_movilidad }}
-            </p>
-
-            <p>
-                {{ convocatoria.get_ciclo_display }}
-                {{ convocatoria.anio }}
-            </p>
-
-            {% if convocatoria.resumen %}
-                <p>
-                    {{ convocatoria.resumen }}
-                </p>
-            {% endif %}
-
+{% extends "base.html" %}
+{% block title %}Convocatorias | Movilidad Académica{% endblock %}
+{% block content %}
+<section class="seccion">
+  <div class="container">
+    <header class="page-heading">
+      <span class="ui-eyebrow">Movilidad académica</span>
+      <h1>Convocatorias</h1>
+      <p>Consulta las convocatorias publicadas y sus requisitos.</p>
+    </header>
+    <div class="row g-4">
+      {% for convocatoria in convocatorias %}
+      <div class="col-md-6 col-xl-4">
+        <article class="convocatoria-card">
+          <span class="ui-eyebrow">{{ convocatoria.tipo_movilidad }}</span>
+          <h2 class="h4 mt-3"><a class="ui-link" href="{% url 'convocatorias:detalle' convocatoria.pk %}">{{ convocatoria.titulo }}</a></h2>
+          <p class="ui-subtle">{{ convocatoria.get_ciclo_display }} {{ convocatoria.anio }}</p>
+          {% if convocatoria.resumen %}<p>{{ convocatoria.resumen }}</p>{% endif %}
+          <a href="{% url 'convocatorias:detalle' convocatoria.pk %}" class="btn btn-movilidad">Ver convocatoria</a>
         </article>
-
-        <hr>
-
-    {% empty %}
-
-        <p>
-            Actualmente no existen convocatorias publicadas.
-        </p>
-
-    {% endfor %}
-
-</body>
-</html>
+      </div>
+      {% empty %}
+      <div class="col-12"><p class="alert alert-light border">Actualmente no existen convocatorias publicadas.</p></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

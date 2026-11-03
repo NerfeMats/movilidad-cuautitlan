@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 
 # Create your models here.
 from django.conf import settings
@@ -232,7 +232,8 @@ class ExpedienteMovilidad(models.Model):
         if errors:
             raise ValidationError(errors)
 
-    def crear_actividades_iniciales(self):
+    @transaction.atomic
+    def crear_actividades_iniciales(self, asignar_reglas=False):
 
         actividades = ActividadProceso.objects.filter(
             tipo_movilidad=self.convocatoria.tipo_movilidad,
@@ -275,6 +276,10 @@ class ExpedienteMovilidad(models.Model):
                     "estado": estado_actividad,
                 },
             )
+
+        if asignar_reglas:
+            from .asignacion_reglas import asignar_reglas_expediente
+            asignar_reglas_expediente(self)
     def puede_avanzar(self):
             # Un estado terminal no puede avanzar.
         if self.estado not in self.SIGUIENTE_ESTADO:
@@ -646,3 +651,10 @@ class HistorialExpediente(models.Model):
             f"{self.expediente} - "
             f"{self.accion}"
         )
+# Fase 2: modelos de reglas (sin activar la nueva evaluaciÃ³n de avance).
+from .reglas_configuracion import (
+    PoliticaRegla,
+    EstadoConfiguracion,
+    ReglaActividadConvocatoria,
+    ReglaActividadExpediente,
+)

@@ -1,0 +1,18 @@
+/* Tarjetas de seguimiento del alumno: independiente del mapa y del tema general. */
+#mov3d-activities, #mov3d-activities-list {min-width:0;max-width:100%}
+.actividad-card {
+  min-width:0; max-width:100%; margin:0 0 1rem; padding:1.1rem 1.25rem;
+  background:var(--ui-surface,#fff); border:1px solid var(--color-borde,#dbe2df);
+  border-radius:var(--ui-radius,14px); box-shadow:0 3px 12px rgba(31,48,43,.035);
+  overflow-wrap:anywhere; word-break:normal;
+}
+.actividad-card__cabecera {display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;min-width:0}
+.actividad-card__contenido {flex:1 1 auto;min-width:0;max-width:100%}
+.actividad-card__titulo {margin:0 0 .65rem;font-size:1.08rem;line-height:1.45;font-weight:700;color:var(--ui-ink,#303a40);overflow-wrap:anywhere}
+.actividad-card__evidencia {margin:0 0 .6rem;color:var(--ui-ink-muted,#59666b);line-height:1.6;font-size:.95rem;white-space:normal;overflow-wrap:anywhere}
+.actividad-card__responsable {margin:0;color:var(--ui-ink,#303a40);font-size:.88rem}
+.actividad-card__requisito {margin:.45rem 0 0;color:var(--ui-ink-muted,#59666b);font-size:.85rem}
+.actividad-card__estado {flex:0 0 auto;white-space:nowrap;font-size:.8rem;padding:.38rem .65rem}
+.actividad-card__fechas {display:flex;flex-wrap:wrap;gap:.45rem 1.4rem;margin-top:.75rem;padding-top:.65rem;border-top:1px solid var(--color-borde,#dbe2df);font-size:.85rem}
+.actividad-card__observaciones {margin-top:.75rem;padding-top:.65rem;border-top:1px solid var(--color-borde,#dbe2df);font-size:.9rem;line-height:1.6;overflow-wrap:anywhere}
+@media(max-width:600px){.actividad-card {padding:1rem}.actividad-card__cabecera{flex-wrap:wrap}.actividad-card__estado{order:-1}}

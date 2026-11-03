@@ -26,6 +26,9 @@
         href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
     >
 
+    <!-- Tokens compartidos y estilos globales (orden importante). -->
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+
     <!-- CSS propio -->
     <link
         rel="stylesheet"
@@ -84,44 +87,64 @@
 
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="#convocatorias">
+                           href="{% url 'inicio' %}#convocatorias">
                             Convocatorias
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="#movilidad">
+                           href="{% url 'inicio' %}#movilidad">
                             Movilidad
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="#fechas">
+                           href="{% url 'inicio' %}#fechas">
                             Fechas
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="#faq">
+                           href="{% url 'inicio' %}#faq">
                             Preguntas frecuentes
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link"
-                           href="#contacto">
+                           href="{% url 'inicio' %}#contacto">
                             Contacto
                         </a>
                     </li>
+
+                    <li class="nav-item ms-lg-2">
+                        {% if user.is_authenticated %}
+                            {% if user.is_staff and perms.expedientes.view_expedientemovilidad %}
+                                <a class="nav-link" href="{% url 'expedientes:panel_responsable' %}">Mis seguimientos</a>
+                            {% else %}
+                                <a class="nav-link" href="{% url 'expedientes:lista' %}">Mis expedientes</a>
+                            {% endif %}
+                        {% else %}
+                            <a class="nav-link" href="{% url 'accounts:login' %}">Iniciar sesión</a>
+                        {% endif %}
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link nav-link">Cerrar sesión</button>
+                        </form>
+                    </li>
+                    {% endif %}
 
                     <li class="nav-item ms-lg-3">
 
                         <a
                             class="btn btn-movilidad"
-                            href="#convocatorias"
+                            href="{% url 'inicio' %}#convocatorias"
                         >
                             Ver convocatorias
                         </a>
@@ -177,25 +200,25 @@
 
                     <ul class="list-unstyled">
                         <li>
-                            <a href="#convocatorias">
+                            <a href="{% url 'inicio' %}#convocatorias">
                                 Convocatorias
                             </a>
                         </li>
 
                         <li>
-                            <a href="#movilidad">
+                            <a href="{% url 'inicio' %}#movilidad">
                                 Movilidad
                             </a>
                         </li>
 
                         <li>
-                            <a href="#fechas">
+                            <a href="{% url 'inicio' %}#fechas">
                                 Fechas
                             </a>
                         </li>
 
                         <li>
-                            <a href="#faq">
+                            <a href="{% url 'inicio' %}#faq">
                                 Preguntas frecuentes
                             </a>
                         </li>

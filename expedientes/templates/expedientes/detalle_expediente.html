@@ -1,10 +1,13 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static actividades_presentacion %}
 
 {% block title %}Detalle del expediente | Movilidad Académica{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <link rel="stylesheet" href="{% static 'expedientes/mapa_3d.css' %}">
+<link rel="stylesheet" href="{% static 'expedientes/actividades.css' %}">
+{% endblock %}
+{% block content %}
 <section class="seccion">
   <div class="container">
     <header class="encabezado-seccion">
@@ -66,20 +69,25 @@
       {% if actividades %}
         <div id="mov3d-activities-list">
           {% for actividad in actividades %}
-            <article class="border rounded p-3 mb-3 mov3d-activity" data-etapa="{{ actividad.actividad_proceso.estado_expediente }}">
-              <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
-                <div>
-                  <h5 class="mb-1">{{ actividad.actividad_proceso.nombre }}</h5>
-                  {% if actividad.actividad_proceso.descripcion %}<p class="mb-2">{{ actividad.actividad_proceso.descripcion }}</p>{% endif %}
-                  <small>Etapa: {{ actividad.actividad_proceso.get_estado_expediente_display }}</small><br>
-                  <small>Responsable: {{ actividad.actividad_proceso.get_responsable_display }}</small><br>
-                  <small>Obligatoria: {% if actividad.actividad_proceso.obligatorio %}Sí{% else %}No{% endif %}</small>
+            <article class="mov3d-activity actividad-card" data-etapa="{{ actividad.actividad_proceso.estado_expediente }}">
+              <div class="actividad-card__cabecera">
+                <div class="actividad-card__contenido">
+                  <h3 class="actividad-card__titulo">{{ actividad.actividad_proceso.nombre }}</h3>
+                  {% with evidencia=actividad.actividad_proceso.descripcion|evidencia_actividad %}
+                    {% if evidencia %}<p class="actividad-card__evidencia"><strong>Documento o evidencia:</strong> {{ evidencia }}</p>{% endif %}
+                  {% endwith %}
+                  <p class="actividad-card__responsable">Responsable: {{ actividad.actividad_proceso.get_responsable_display }}</p>
+                  {% if actividad.actividad_proceso.obligatorio %}<p class="actividad-card__requisito">Obligatoria: Sí</p>{% endif %}
                 </div>
-                <span class="badge {% if actividad.estado == 'COMPLETADA' %}bg-success{% elif actividad.estado == 'PENDIENTE' %}bg-secondary{% elif actividad.estado == 'EN_PROCESO' %}bg-primary{% elif actividad.estado == 'EN_REVISION' %}bg-warning text-dark{% elif actividad.estado == 'REQUIERE_CORRECCION' %}bg-danger{% elif actividad.estado == 'NO_APLICA' %}bg-light text-dark border{% else %}bg-dark{% endif %}">{{ actividad.get_estado_display }}</span>
+                <span class="actividad-card__estado badge {% if actividad.estado == 'COMPLETADA' %}bg-success{% elif actividad.estado == 'PENDIENTE' %}bg-secondary{% elif actividad.estado == 'EN_PROCESO' %}bg-primary{% elif actividad.estado == 'EN_REVISION' %}bg-warning text-dark{% elif actividad.estado == 'REQUIERE_CORRECCION' %}bg-danger{% elif actividad.estado == 'NO_APLICA' %}bg-light text-dark border{% else %}bg-dark{% endif %}">{{ actividad.get_estado_display }}</span>
               </div>
-              {% if actividad.fecha_limite %}<div class="mt-2"><small>Fecha límite: {{ actividad.fecha_limite|date:"d/m/Y" }}</small></div>{% endif %}
-              {% if actividad.fecha_completada %}<div class="mt-2"><small>Completada: {{ actividad.fecha_completada|date:"d/m/Y H:i" }}</small></div>{% endif %}
-              {% if actividad.observaciones %}<div class="mt-2"><strong>Observaciones:</strong><p class="mb-0">{{ actividad.observaciones }}</p></div>{% endif %}
+              {% if actividad.fecha_limite or actividad.fecha_completada %}
+                <div class="actividad-card__fechas">
+                  {% if actividad.fecha_limite %}<span>Fecha límite: {{ actividad.fecha_limite|date:"d/m/Y" }}</span>{% endif %}
+                  {% if actividad.fecha_completada %}<span>Completada: {{ actividad.fecha_completada|date:"d/m/Y H:i" }}</span>{% endif %}
+                </div>
+              {% endif %}
+              {% if actividad.observaciones %}<div class="actividad-card__observaciones"><strong>Observaciones:</strong> <span>{{ actividad.observaciones }}</span></div>{% endif %}
             </article>
           {% endfor %}
         </div>
@@ -90,5 +98,5 @@
     <div class="mt-4"><a href="{% url 'expedientes:lista' %}" class="btn btn-outline-dark">Volver a mis expedientes</a></div>
   </div>
 </section>
-<script defer src="{% static 'expedientes/mapa_3d.js' %}"></script>
 {% endblock %}
+{% block extra_js %}<script defer src="{% static 'expedientes/mapa_3d.js' %}"></script>{% endblock %}

@@ -1,15 +1,18 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static actividades_presentacion %}
 {% block title %}Ruta de expediente | Responsable{% endblock %}
-{% block content %}
+{% block extra_css %}
 <link rel="stylesheet" href="{% static 'expedientes/mapa_3d.css' %}">
+<link rel="stylesheet" href="{% static 'expedientes/ruta_actividades.css' %}">
+{% endblock %}
+{% block content %}
 <section class="seccion"><div class="container">
 <a href="{% url 'expedientes:panel_responsable' %}" class="btn btn-outline-secondary mb-3">← Volver al panel</a>
 <h1>Ruta de movilidad — {{ expediente.alumno.get_full_name|default:expediente.alumno.username }}</h1>
 <p>{{ expediente.convocatoria.titulo }} · Estado real: <strong>{{ expediente.get_estado_display }}</strong></p>
 <div class="rm3" id="ruta-responsable">
-<p style="color:#f0cb77;font-size:12px;letter-spacing:.1em">MAPA DE SEGUIMIENTO · SOLO LECTURA</p>
-<h2 style="color:white">{% if expediente.estado == "CANCELADO" %}Expediente cancelado{% else %}Usted está aquí: {{ expediente.get_estado_display }}{% endif %}</h2>
+<p class="rm3-eyebrow">MAPA DE SEGUIMIENTO · SOLO LECTURA</p>
+<h2 class="rm3-heading">{% if expediente.estado == "CANCELADO" %}Expediente cancelado{% else %}Usted está aquí: {{ expediente.get_estado_display }}{% endif %}</h2>
 <p>Selecciona una estación para consultar <strong>todas</strong> sus actividades registradas. La selección no cambia el estado real.</p>
 <div class="track-wrapper"><div class="track" role="group" aria-label="Estaciones del expediente">
 {% for e in estaciones %}
@@ -20,20 +23,32 @@
 <div id="panel-{{ forloop.counter }}" class="detail" {% if e.situacion != "actual" and expediente.estado != "CANCELADO" %}hidden{% elif expediente.estado == "CANCELADO" and not forloop.first %}hidden{% endif %}>
 <h3>{{ e.nombre }}</h3>
 <p class="rm3-stage-context">{% if expediente.estado == 'CANCELADO' %}Expediente cancelado. Consulta informativa; no existe avance disponible.{% elif e.situacion == 'actual' %}Etapa actual del expediente.{% elif e.situacion == 'recorrida' %}Etapa anterior. El avance registrado no acredita por sí solo que todas las actividades se completaron.{% else %}Etapa futura. Las actividades registradas no significan que se haya llegado a esta etapa.{% endif %}</p>
+<div class="rm3-actividades" role="list" aria-label="Actividades de la etapa">
 {% for a in e.actividades %}
-<article><p><strong>{{ a.actividad_proceso.nombre }}</strong> · {{ a.get_estado_display }}</p>
-{% if a.actividad_proceso.descripcion %}<p>{{ a.actividad_proceso.descripcion }}</p>{% endif %}
-<p>Responsable: {{ a.actividad_proceso.get_responsable_display }} · Obligatoria: {% if a.actividad_proceso.obligatorio %}Sí{% else %}No{% endif %}</p>
-{% if a.fecha_limite %}<p>Fecha límite: {{ a.fecha_limite|date:"d/m/Y" }}</p>{% endif %}
-{% if a.fecha_completada %}<p>Fecha de finalización: {{ a.fecha_completada|date:"d/m/Y H:i" }}</p>{% endif %}
-{% if a.observaciones %}<p>Observaciones: {{ a.observaciones }}</p>{% endif %}
-</article>{% empty %}<p>No hay actividades registradas para esta etapa; esto no acredita su cumplimiento.</p>{% endfor %}
+<article class="rm3-actividad" role="listitem">
+  <div class="rm3-actividad__encabezado">
+    <h4 class="rm3-actividad__titulo">{{ a.actividad_proceso.nombre }}</h4>
+    <span class="rm3-actividad__estado{% if a.estado == 'COMPLETADA' %} rm3-actividad__estado--terminada{% elif a.estado == 'PENDIENTE' %} rm3-actividad__estado--pendiente{% elif a.estado == 'REQUIERE_CORRECCION' %} rm3-actividad__estado--correccion{% endif %}">{{ a.get_estado_display }}</span>
+  </div>
+  {% with evidencia=a.actividad_proceso.descripcion|evidencia_actividad %}
+  {% if evidencia %}<p class="rm3-actividad__evidencia"><strong>Documento o evidencia:</strong> {{ evidencia }}</p>{% endif %}
+  {% endwith %}
+  <div class="rm3-actividad__datos">
+    <span><strong>Responsable:</strong> {{ a.actividad_proceso.get_responsable_display }}</span>
+    {% if a.actividad_proceso.obligatorio %}<span class="rm3-actividad__obligatoria">Obligatoria: Sí</span>{% endif %}
+    {% if a.fecha_limite %}<span><strong>Fecha límite:</strong> {{ a.fecha_limite|date:"d/m/Y" }}</span>{% endif %}
+    {% if a.fecha_completada %}<span><strong>Completada:</strong> {{ a.fecha_completada|date:"d/m/Y H:i" }}</span>{% endif %}
+  </div>
+  {% if a.observaciones %}<p class="rm3-actividad__observaciones"><strong>Observaciones:</strong> {{ a.observaciones }}</p>{% endif %}
+</article>
+{% empty %}
+<p class="rm3-actividades__vacia">No hay actividades registradas para esta etapa; esto no acredita su cumplimiento.</p>
+{% endfor %}
+</div>
 </div>{% endfor %}
 {% if expediente.estado == "CANCELADO" %}<p class="mt-3">La ruta está cancelada; no existe avance disponible.</p>
 {% elif puede_avanzar %}<p class="mt-3"><strong>Condición de la etapa actual ({{ expediente.get_estado_display }}):</strong> las reglas permiten solicitar el avance. Esto no sustituye la revisión documental ni ejecuta automáticamente la transición.</p>
 {% else %}<p class="mt-3"><strong>Condición de la etapa actual ({{ expediente.get_estado_display }}):</strong> todavía existen condiciones pendientes para avanzar. Este mensaje no se refiere necesariamente a la estación consultada.</p>{% endif %}
 </div></div></section>
-<script>
-(()=>{const r=document.getElementById("ruta-responsable");if(!r)return;const bs=[...r.querySelectorAll("[data-target]")];bs.forEach(b=>b.addEventListener("click",()=>{bs.forEach(x=>{const on=x===b;x.setAttribute("aria-pressed",String(on));document.getElementById(x.dataset.target).hidden=!on})}));})();
-</script>
 {% endblock %}
+{% block extra_js %}<script defer src="{% static 'expedientes/ruta_responsable.js' %}"></script>{% endblock %}

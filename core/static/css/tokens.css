@@ -1,0 +1,20 @@
+/* Diseño compartido: una sola fuente de colores y geometría. */
+:root {
+  --color-grafito: #303a40;
+  --color-verde: #4c5f59;
+  --color-verde-claro: #6f8e94;
+  --color-marfil: #f5f6f5;
+  --color-blanco: #ffffff;
+  --color-texto: #293238;
+  --color-borde: #dce3e0;
+  --ui-surface: #ffffff;
+  --ui-surface-soft: #f5f7f6;
+  --ui-ink: #293238;
+  --ui-ink-muted: #64716e;
+  --ui-accent: #4c5f59;
+  --ui-accent-soft: #e6efeb;
+  --ui-accent-strong: #304f43;
+  --ui-gold: #b48642;
+  --ui-radius: 18px;
+  --ui-shadow: 0 12px 32px rgb(38 56 49 / 8%);
+}
