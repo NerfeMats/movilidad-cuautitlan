@@ -363,3 +363,58 @@ class HistorialExpedienteAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+# V19: acciones administrativas y borradores sin envío automático.
+from .models import AccionSeguimiento, HistorialAccion, RecordatorioSeguimiento
+
+
+@admin.register(AccionSeguimiento)
+class AccionSeguimientoAdmin(admin.ModelAdmin):
+    list_display = ("id", "titulo", "expediente", "responsable", "estado", "prioridad", "fecha_limite", "proximo_seguimiento")
+    list_filter = ("responsable", "estado", "prioridad", "visible_alumno")
+    search_fields = ("titulo", "expediente__alumno__username", "descripcion")
+    readonly_fields = ("creado_por", "fecha_creacion", "fecha_actualizacion", "fecha_cierre")
+
+    def save_model(self, request, obj, form, change):
+        previo = None
+        if change:
+            previo = AccionSeguimiento.objects.get(pk=obj.pk)
+        else:
+            obj.creado_por = request.user
+        obj.full_clean()
+        super().save_model(request, obj, form, change)
+        if previo is None:
+            descripcion = "Alta de acción administrativa"
+        else:
+            campos = ("titulo", "descripcion", "responsable", "estado", "prioridad", "fecha_limite", "proximo_seguimiento", "visible_alumno", "observaciones", "actividad_id", "documento_id", "encargado_seguimiento_id")
+            cambios = [c for c in campos if getattr(previo, c) != getattr(obj, c)]
+            descripcion = "Modificación de campos: " + ", ".join(cambios or ["sin diferencias"])
+        HistorialAccion.objects.create(accion=obj, usuario=request.user, descripcion=descripcion)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(HistorialAccion)
+class HistorialAccionAdmin(admin.ModelAdmin):
+    list_display = ("accion", "usuario", "fecha", "descripcion")
+    readonly_fields = ("accion", "usuario", "fecha", "descripcion")
+    def has_add_permission(self, request):
+        return False
+    def has_change_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(RecordatorioSeguimiento)
+class RecordatorioSeguimientoAdmin(admin.ModelAdmin):
+    list_display = ("id", "asunto", "destinatario", "estado", "fecha_creacion")
+    readonly_fields = ("creado_por", "fecha_creacion", "estado")
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.creado_por = request.user
+        obj.full_clean()
+        super().save_model(request, obj, form, change)
+    def has_delete_permission(self, request, obj=None):
+        return False

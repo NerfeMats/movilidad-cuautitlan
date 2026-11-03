@@ -689,6 +689,110 @@ class HistorialExpediente(models.Model):
             f"{self.expediente} - "
             f"{self.accion}"
         )
+
+
+class AccionSeguimiento(models.Model):
+    """Gestion adicional; no sustituye ActividadExpediente."""
+    class Estado(models.TextChoices):
+        PENDIENTE = "PENDIENTE", "Pendiente"
+        EN_PROCESO = "EN_PROCESO", "En proceso"
+        ESPERANDO_RESPUESTA = "ESPERANDO_RESPUESTA", "Esperando respuesta"
+        REQUIERE_CORRECCION = "REQUIERE_CORRECCION", "Requiere corrección"
+        COMPLETADA = "COMPLETADA", "Completada"
+        CANCELADA = "CANCELADA", "Cancelada"
+
+    class Prioridad(models.TextChoices):
+        NORMAL = "NORMAL", "Normal"
+        ALTA = "ALTA", "Alta"
+        URGENTE = "URGENTE", "Urgente"
+
+    expediente = models.ForeignKey(ExpedienteMovilidad, on_delete=models.CASCADE, related_name="acciones_seguimiento")
+    actividad = models.ForeignKey(ActividadExpediente, null=True, blank=True, on_delete=models.SET_NULL, related_name="acciones_seguimiento")
+    documento = models.ForeignKey(DocumentoExpediente, null=True, blank=True, on_delete=models.SET_NULL, related_name="acciones_seguimiento")
+    titulo = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True)
+    responsable = models.CharField(max_length=30, choices=ActividadProceso.Responsable.choices)
+    encargado_seguimiento = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="acciones_movilidad_supervisadas")
+    estado = models.CharField(max_length=30, choices=Estado.choices, default=Estado.PENDIENTE)
+    prioridad = models.CharField(max_length=12, choices=Prioridad.choices, default=Prioridad.NORMAL)
+    fecha_limite = models.DateField(null=True, blank=True)
+    proximo_seguimiento = models.DateField(null=True, blank=True)
+    visible_alumno = models.BooleanField(default=False, help_text="Solo si el contenido se puede mostrar al alumno; nunca incluye archivos reservados")
+    observaciones = models.TextField(blank=True)
+    creado_por = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="acciones_movilidad_creadas")
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    fecha_cierre = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["proximo_seguimiento", "fecha_limite", "pk"]
+        verbose_name = "Acción de seguimiento"
+        verbose_name_plural = "Acciones de seguimiento"
+
+    def clean(self):
+        errores = {}
+        if self.actividad_id and self.actividad.expediente_id != self.expediente_id:
+            errores["actividad"] = "La actividad debe pertenecer al mismo expediente."
+        if self.documento_id and self.documento.expediente_id != self.expediente_id:
+            errores["documento"] = "El documento debe pertenecer al mismo expediente."
+        if self.visible_alumno and self.responsable != ActividadProceso.Responsable.ALUMNO:
+            errores["visible_alumno"] = "Solo las acciones a cargo del alumno pueden mostrarse al alumno."
+        if self.visible_alumno and self.documento_id and self.documento.visibilidad == DocumentoExpediente.Visibilidad.RESPONSABLE:
+            errores["documento"] = "No vincule un documento reservado a una acción visible para el alumno."
+        if self.estado in (self.Estado.COMPLETADA, self.Estado.CANCELADA) and not self.observaciones.strip():
+            errores["observaciones"] = "El cierre o cancelación requiere una justificación."
+        if errores:
+            raise ValidationError(errores)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        if self.estado in (self.Estado.COMPLETADA, self.Estado.CANCELADA):
+            if self.fecha_cierre is None:
+                self.fecha_cierre = timezone.now()
+        else:
+            self.fecha_cierre = None
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.titulo
+
+
+class HistorialAccion(models.Model):
+    accion = models.ForeignKey(AccionSeguimiento, on_delete=models.CASCADE, related_name="historial")
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    descripcion = models.TextField()
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-fecha", "-pk"]
+        verbose_name = "Historial de acción"
+        verbose_name_plural = "Historial de acciones"
+
+
+class RecordatorioSeguimiento(models.Model):
+    """Borrador manual. NO envia mensajes ni acredita notificación."""
+    accion = models.ForeignKey(AccionSeguimiento, null=True, blank=True, on_delete=models.PROTECT, related_name="recordatorios")
+    actividad = models.ForeignKey(ActividadExpediente, null=True, blank=True, on_delete=models.PROTECT, related_name="recordatorios")
+    destinatario = models.CharField(max_length=200, help_text="Destino o área verificados por quien redacta; no presume dirección institucional")
+    canal = models.CharField(max_length=30, default="CORREO", choices=[("CORREO", "Correo electrónico"), ("OTRO", "Otro canal")])
+    asunto = models.CharField(max_length=200)
+    mensaje = models.TextField()
+    creado_por = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=[("BORRADOR", "Borrador sin enviar")], default="BORRADOR", editable=False)
+
+    class Meta:
+        ordering = ["-fecha_creacion", "-pk"]
+        verbose_name = "Borrador de recordatorio"
+        verbose_name_plural = "Borradores de recordatorios"
+
+    def clean(self):
+        if bool(self.accion_id) == bool(self.actividad_id):
+            raise ValidationError("Seleccione una acción o una actividad, exclusivamente.")
+
+    def __str__(self):
+        return self.asunto
+
 # Fase 2: modelos de reglas (sin activar la nueva evaluaciÃ³n de avance).
 from .reglas_configuracion import (
     PoliticaRegla,

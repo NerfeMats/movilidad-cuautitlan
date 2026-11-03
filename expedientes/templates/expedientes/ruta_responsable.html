@@ -40,6 +40,15 @@
     {% if a.fecha_completada %}<span><strong>Completada:</strong> {{ a.fecha_completada|date:"d/m/Y H:i" }}</span>{% endif %}
   </div>
   {% if a.observaciones %}<p class="rm3-actividad__observaciones"><strong>Observaciones:</strong> {{ a.observaciones }}</p>{% endif %}
+  {% for seguimiento in a.acciones_seguimiento.all %}
+    <div class="alert alert-info mt-3 mb-3" role="note">
+      <p class="mb-1"><strong>Antecedente y seguimiento administrativo</strong></p>
+      <p class="mb-1"><strong>Gestión:</strong> {{ seguimiento.titulo }} · <strong>Estado del seguimiento:</strong> {{ seguimiento.get_estado_display }}</p>
+      {% if seguimiento.descripcion %}<p class="mb-1">{{ seguimiento.descripcion }}</p>{% endif %}
+      {% if seguimiento.observaciones %}<p class="mb-1"><strong>Por verificar:</strong> {{ seguimiento.observaciones }}</p>{% endif %}
+      <p class="mb-0 small">Esta información no acredita por sí sola la entrega, la recepción ni la conclusión de la actividad.</p>
+    </div>
+  {% endfor %}
   <section class="doc-panel" aria-label="Documentos de {{ a.actividad_proceso.nombre }}">
     <h5 class="doc-panel__title">Expediente documental de la actividad</h5>
     {% if perms.expedientes.view_documentoexpediente %}
@@ -75,7 +84,22 @@
           <td>{{ documento.nombre_archivo_original|default:documento.nombre }}</td>
           <td>{{ documento.get_estado_display }}</td>
           <td>{{ documento.get_visibilidad_display }}</td>
-          <td><a class="btn btn-sm btn-outline-secondary" href="{% url 'expedientes:documento_descargar' documento.pk %}">Descargar</a></td>
+          <td>
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'expedientes:documento_descargar' documento.pk %}">Descargar</a>
+            {% if perms.expedientes.change_documentoexpediente %}
+            <form method="post" action="{% url 'expedientes:documento_vincular' documento.pk %}" class="mt-2">
+              {% csrf_token %}
+              <label for="actividad-doc-{{ documento.pk }}" class="form-label">Vincular a actividad</label>
+              <select id="actividad-doc-{{ documento.pk }}" name="actividad_id" class="form-select form-select-sm">
+                <option value="">Sin vinculación</option>
+                {% for a in actividades_vinculables %}
+                <option value="{{ a.pk }}">{{ a.actividad_proceso.nombre }} ({{ a.get_estado_display }})</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-sm btn-outline-primary mt-1">Registrar vinculación</button>
+            </form>
+            {% endif %}
+          </td>
         </tr>
       {% empty %}
         <tr><td colspan="4">Este expediente no tiene documentos históricos sin actividad asociada.</td></tr>
@@ -84,6 +108,18 @@
     </table>
   </div>
 </section>
+{% endif %}
+{% if puede_ver_documentos and perms.expedientes.change_documentoexpediente %}
+<section class="mt-4" aria-labelledby="titulo-documentos-vinculados">
+<h2 id="titulo-documentos-vinculados" class="h4">Vinculaciones administrativas</h2>
+<p class="text-muted">Vincular o retirar una relación no aprueba un documento ni completa la actividad.</p>
+<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Documento</th><th>Actividad</th><th>Acción</th></tr></thead><tbody>
+{% for documento in documentos_vinculados %}
+<tr><td>{{ documento.nombre_archivo_original|default:documento.nombre }}</td><td>{{ documento.actividad.actividad_proceso.nombre }}</td><td>
+<form method="post" action="{% url 'expedientes:documento_vincular' documento.pk %}">{% csrf_token %}
+<input type="hidden" name="actividad_id" value=""><button class="btn btn-sm btn-outline-secondary" type="submit">Desvincular</button></form></td></tr>
+{% empty %}<tr><td colspan="3">Sin documentos vinculados.</td></tr>{% endfor %}
+</tbody></table></div></section>
 {% endif %}
 </div></section>
 {% endblock %}

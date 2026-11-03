@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Centro de seguimiento | Movilidad{% endblock %}
+{% block content %}
+<section class="seccion"><div class="container">
+<a href="{% url 'expedientes:panel_responsable' %}" class="btn btn-outline-secondary mb-3">Volver al panel</a>
+<h1>Centro de seguimiento de movilidad</h1>
+<p>Actividades de etapa actual y gestiones administrativas adicionales, agrupadas por expediente. Los plazos no registrados no son vencimientos.</p>
+<p><strong>Hoy:</strong> {{ hoy|date:"d/m/Y" }} · <strong>Expedientes con pendientes:</strong> {{ grupos|length }} · <strong>Actividades actuales:</strong> {{ total_actividades }} · <strong>Acciones adicionales:</strong> {{ total_acciones }} · <strong>Borradores:</strong> {{ borradores }} (no enviados)</p>
+<p><a href="{% url 'admin:expedientes_accionseguimiento_add' %}" class="btn btn-outline-primary">Nueva acción administrativa</a> <a href="{% url 'admin:expedientes_recordatorioseguimiento_add' %}" class="btn btn-outline-primary">Preparar recordatorio</a></p>
+<h2>Expedientes con seguimiento pendiente</h2>
+{% for grupo in grupos %}
+<details class="card mb-3" {% if grupos|length == 1 %}open{% endif %}>
+  <summary class="card-header p-3" style="cursor:pointer;">
+    <strong>{{ grupo.expediente.alumno.get_full_name|default:grupo.expediente.alumno.username }}</strong>
+    <span class="text-muted"> · Expediente #{{ grupo.expediente.pk }} · {{ grupo.expediente.get_estado_display }}</span>
+    <span class="badge bg-secondary ms-2">{{ grupo.total }} pendiente{{ grupo.total|pluralize }}</span>
+    <span class="d-block small mt-1">{% for r in grupo.responsables %}{{ r.nombre }}: {{ r.total }}{% if not forloop.last %} · {% endif %}{% endfor %}</span>
+    <span class="d-block small text-primary">Mostrar u ocultar pendientes</span>
+  </summary>
+  <div class="card-body">
+    <p><a class="btn btn-sm btn-outline-secondary" href="{% url 'expedientes:ruta_responsable' grupo.expediente.pk %}">Ver expediente</a></p>
+    <h3 class="h5">Actividades de la etapa actual ({{ grupo.actividades|length }})</h3>
+    {% if grupo.actividades %}
+    <div class="table-responsive"><table class="table table-striped align-middle">
+      <thead><tr><th>Actividad</th><th>Responsable</th><th>Estado</th><th>Fecha límite</th></tr></thead>
+      <tbody>{% for a in grupo.actividades %}<tr>
+      <td>{{ a.actividad_proceso.nombre }}</td><td>{{ a.actividad_proceso.get_responsable_display }}</td><td>{{ a.get_estado_display }}</td>
+      <td>{% if a.fecha_limite %}{{ a.fecha_limite|date:"d/m/Y" }}{% if a.fecha_limite < hoy %} · Vencida{% endif %}{% else %}Sin fecha registrada{% endif %}</td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="text-muted">Sin actividades actuales exigibles.</p>{% endif %}
+    <h3 class="h5">Acciones administrativas adicionales ({{ grupo.acciones|length }})</h3>
+    {% if grupo.acciones %}
+    <div class="table-responsive"><table class="table table-striped align-middle">
+      <thead><tr><th>Acción</th><th>Responsable</th><th>Estado</th><th>Próximo seguimiento</th><th>Plazo</th></tr></thead>
+      <tbody>{% for a in grupo.acciones %}<tr>
+      <td>{{ a.titulo }}</td><td>{{ a.get_responsable_display }}</td><td>{{ a.get_estado_display }}</td>
+      <td>{{ a.proximo_seguimiento|date:"d/m/Y"|default:"Sin programar" }}</td><td>{{ a.fecha_limite|date:"d/m/Y"|default:"Sin plazo" }}</td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="text-muted">Sin acciones administrativas adicionales.</p>{% endif %}
+  </div>
+</details>
+{% empty %}<div class="alert alert-light border">No existen actividades actuales ni acciones adicionales pendientes.</div>{% endfor %}
+<p class="text-muted small">Los recordatorios son borradores; esta versión no envía correos ni notificaciones automáticas. Las actividades futuras no se consideran vencidas.</p>
+</div></section>
+{% endblock %}

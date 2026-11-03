@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Mis pendientes | Movilidad{% endblock %}
+{% block content %}<section class="seccion"><div class="container"><h1>Mis pendientes de movilidad</h1>
+<p>Solo actividades de la etapa actual a tu cargo y acciones administrativas expresamente compartidas contigo.</p>
+<h2>Actividades</h2><ul class="list-group mb-4">
+{% for a in actividades %}<li class="list-group-item"><strong>{{ a.actividad_proceso.nombre }}</strong> · {{ a.get_estado_display }} · {% if a.fecha_limite %}Límite {{ a.fecha_limite|date:"d/m/Y" }}{% else %}Sin fecha límite registrada{% endif %}</li>
+{% empty %}<li class="list-group-item">Sin actividades actuales a tu cargo.</li>{% endfor %}</ul>
+<h2>Otras acciones compartidas</h2><ul class="list-group">
+{% for a in acciones %}<li class="list-group-item"><strong>{{ a.titulo }}</strong> · {{ a.get_estado_display }}{% if a.fecha_limite %} · Límite {{ a.fecha_limite|date:"d/m/Y" }}{% endif %}</li>
+{% empty %}<li class="list-group-item">Sin acciones adicionales compartidas.</li>{% endfor %}</ul>
+</div></section>{% endblock %}
