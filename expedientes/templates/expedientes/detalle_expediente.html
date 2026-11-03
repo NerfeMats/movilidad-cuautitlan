@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static actividades_presentacion %}
+{% load static actividades_presentacion documentos_presentacion %}
 
 {% block title %}Detalle del expediente | Movilidad Académica{% endblock %}
 
@@ -90,7 +90,7 @@
               {% if actividad.observaciones %}<div class="actividad-card__observaciones"><strong>Observaciones:</strong> <span>{{ actividad.observaciones }}</span></div>{% endif %}
               <section class="doc-panel" aria-label="Documentos de {{ actividad.actividad_proceso.nombre }}">
                 <h4 class="doc-panel__title">Documentos de la actividad</h4>
-                {% with documentos=actividad.documentos.all %}
+                {% with documentos=actividad.documentos.all|documentos_visibles_alumno %}
                   {% include "expedientes/_documentos_secciones.html" with documentos=documentos vista_responsable=False %}
                   {% if actividad.actividad_proceso.estado_expediente == expediente.estado and expediente.estado != 'CANCELADO' and actividad.actividad_proceso.responsable == 'ALUMNO' %}
                     {% include "expedientes/_documento_formulario.html" with documentos=documentos %}

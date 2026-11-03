@@ -233,10 +233,15 @@ class ExpedienteMovilidad(models.Model):
                     "Debe indicar el motivo del alta excepcional."
                 )
 
-            if not self.fecha_recepcion_area:
-                errors["fecha_recepcion_area"] = (
-                    "Debe indicar la fecha en que el expediente "
-                    "fue recibido por el área."
+            # El dato desconocido se deja NULL; se exige declarar explícitamente
+            # esa incertidumbre en el motivo administrativo, sin inventar fechas.
+            if not self.fecha_recepcion_area and (
+                "fecha de recepción desconocida" not in
+                (self.motivo_alta_excepcional or "").casefold()
+            ):
+                errors["motivo_alta_excepcional"] = (
+                    "Si desconoce la fecha de recepción, indíquelo expresamente "
+                    "en el motivo con la frase 'fecha de recepción desconocida'."
                 )
 
         if errors:
@@ -597,6 +602,16 @@ class DocumentoExpediente(models.Model):
         max_length=30,
         choices=Estado.choices,
         default=Estado.CARGADO,
+    )
+
+    class Visibilidad(models.TextChoices):
+        ALUMNO = "ALUMNO", "Compartido con el alumno"
+        RESPONSABLE = "RESPONSABLE", "Reservado al personal autorizado"
+
+    visibilidad = models.CharField(
+        max_length=20,
+        choices=Visibilidad.choices,
+        default=Visibilidad.ALUMNO,
     )
 
     version = models.PositiveIntegerField(

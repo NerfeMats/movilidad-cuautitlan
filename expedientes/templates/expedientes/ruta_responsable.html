@@ -60,6 +60,31 @@
 {% if expediente.estado == "CANCELADO" %}<p class="mt-3">La ruta está cancelada; no existe avance disponible.</p>
 {% elif puede_avanzar %}<p class="mt-3"><strong>Condición de la etapa actual ({{ expediente.get_estado_display }}):</strong> las reglas permiten solicitar el avance. Esto no sustituye la revisión documental ni ejecuta automáticamente la transición.</p>
 {% else %}<p class="mt-3"><strong>Condición de la etapa actual ({{ expediente.get_estado_display }}):</strong> todavía existen condiciones pendientes para avanzar. Este mensaje no se refiere necesariamente a la estación consultada.</p>{% endif %}
-</div></div></section>
+</div>
+
+{% if puede_ver_documentos %}
+<section class="mt-4" aria-labelledby="titulo-historicos">
+  <h2 id="titulo-historicos" class="h4">Inventario documental histórico</h2>
+  <p class="text-muted">Documentos incorporados sin asociación a una actividad. Su presencia no acredita aprobación ni cumplimiento de etapas.</p>
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead><tr><th scope="col">Documento</th><th scope="col">Estado</th><th scope="col">Visibilidad</th><th scope="col">Acción</th></tr></thead>
+      <tbody>
+      {% for documento in documentos_historicos %}
+        <tr>
+          <td>{{ documento.nombre_archivo_original|default:documento.nombre }}</td>
+          <td>{{ documento.get_estado_display }}</td>
+          <td>{{ documento.get_visibilidad_display }}</td>
+          <td><a class="btn btn-sm btn-outline-secondary" href="{% url 'expedientes:documento_descargar' documento.pk %}">Descargar</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">Este expediente no tiene documentos históricos sin actividad asociada.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+</div></section>
 {% endblock %}
 {% block extra_js %}<script defer src="{% static 'expedientes/ruta_responsable.js' %}"></script>{% endblock %}

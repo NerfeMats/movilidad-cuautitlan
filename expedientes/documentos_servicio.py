@@ -122,7 +122,10 @@ def documentos_de_actividad(*, usuario, actividad):
     actividad = ActividadExpediente.objects.select_related("expediente").get(pk=actividad.pk)
     if not _puede_ver(usuario, actividad.expediente):
         raise PermissionDenied("Sin permiso de consulta")
-    return DocumentoExpediente.objects.filter(expediente=actividad.expediente, actividad=actividad)
+    qs = DocumentoExpediente.objects.filter(expediente=actividad.expediente, actividad=actividad)
+    if usuario.pk == actividad.expediente.alumno_id:
+        qs = qs.filter(visibilidad=DocumentoExpediente.Visibilidad.ALUMNO)
+    return qs
 
 
 def abrir_documento(*, usuario, documento):
@@ -130,6 +133,8 @@ def abrir_documento(*, usuario, documento):
     doc = DocumentoExpediente.objects.select_related("expediente").get(pk=documento.pk)
     if not _puede_ver(usuario, doc.expediente):
         raise PermissionDenied("Sin permiso de descarga")
+    if doc.visibilidad == DocumentoExpediente.Visibilidad.RESPONSABLE and usuario.pk == doc.expediente.alumno_id:
+        raise PermissionDenied("Documento reservado al personal autorizado")
     nombre = doc.archivo.name
     if not nombre.startswith(PREFIJO):
         raise ValidationError("Documento anterior: requiere migración a almacenamiento privado")
@@ -169,3 +174,64 @@ def revisar_documento(*, usuario, documento, aprobar, observaciones):
             estado_anterior=doc.expediente.estado, estado_nuevo=doc.expediente.estado,
         )
         return doc
+
+
+def importar_documento_historico(*, usuario, expediente, archivo, nombre, observaciones=""):
+    """Servicio de importación SOLO administrativa. No cambia actividades ni etapa.
+
+    Devuelve (documento, creado). Compara SHA256 con los archivos existentes
+    del expediente; no depende del nombre del PDF para detectar duplicados.
+    """
+    import hashlib
+    from django.core.files.base import ContentFile
+
+    if not isinstance(expediente, ExpedienteMovilidad) or not expediente.pk:
+        raise ValidationError("Expediente no válido")
+    expediente = ExpedienteMovilidad.objects.get(pk=expediente.pk)
+    if not _puede_modificar(usuario, expediente, "add"):
+        raise PermissionDenied("La importación requiere permiso documental administrativo")
+    nombre = (nombre or "").strip()
+    if not nombre or len(nombre) > 200:
+        raise ValidationError("Nombre de documento inválido")
+    sufijo = _validar_archivo(archivo)
+    archivo.seek(0)
+    datos = archivo.read()
+    digest = hashlib.sha256(datos).hexdigest()
+    storage = almacenamiento_privado()
+    # Detectar duplicados por contenido; no confiar en nombres ni ruta cliente.
+    for anterior in DocumentoExpediente.objects.filter(expediente=expediente).only("id", "archivo"):
+        if not anterior.archivo.name.startswith(PREFIJO):
+            continue
+        ruta = anterior.archivo.name[len(PREFIJO):]
+        if not storage.exists(ruta):
+            continue
+        with storage.open(ruta, "rb") as existente:
+            calculo = hashlib.sha256()
+            for trozo in iter(lambda: existente.read(1024 * 1024), b""):
+                calculo.update(trozo)
+        if calculo.hexdigest() == digest:
+            return anterior, False
+    nombre_original = Path(str(archivo.name).replace("\\", "/")).name.strip()[:255]
+    ruta_privada = f"{expediente.pk}/historico/{uuid4().hex}{sufijo}"
+    guardado = None
+    try:
+        guardado = storage.save(ruta_privada, ContentFile(datos))
+        with transaction.atomic():
+            doc = DocumentoExpediente.objects.create(
+                expediente=expediente, actividad=None, nombre=nombre,
+                archivo=PREFIJO + guardado, estado=DocumentoExpediente.Estado.CARGADO,
+                version=1, nombre_archivo_original=nombre_original,
+                visibilidad=DocumentoExpediente.Visibilidad.RESPONSABLE,
+                observaciones=(observaciones or "")[:5000],
+            )
+            HistorialExpediente.objects.create(
+                expediente=expediente, usuario=usuario,
+                accion="DOCUMENTO_HISTORICO_IMPORTADO",
+                descripcion=f"Documento {doc.pk} importado, SHA256 {digest}",
+                estado_anterior=expediente.estado, estado_nuevo=expediente.estado,
+            )
+        return doc, True
+    except Exception:
+        if guardado and storage.exists(guardado):
+            storage.delete(guardado)
+        raise

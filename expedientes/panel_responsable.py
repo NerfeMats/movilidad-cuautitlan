@@ -1,7 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render
-from .models import ExpedienteMovilidad, ActividadExpediente
+
+from .models import ExpedienteMovilidad, DocumentoExpediente
+
 
 def es_responsable_autorizado(user):
     return (
@@ -9,6 +11,7 @@ def es_responsable_autorizado(user):
         and user.is_staff
         and user.has_perm("expedientes.view_expedientemovilidad")
     )
+
 
 @login_required
 def panel_responsable(request):
@@ -22,6 +25,7 @@ def panel_responsable(request):
     return render(request, "expedientes/panel_responsable.html", {
         "expedientes": expedientes,
     })
+
 
 @login_required
 def ruta_responsable(request, pk):
@@ -52,8 +56,22 @@ def ruta_responsable(request, pk):
                 if a.actividad_proceso.estado_expediente == codigo
             ],
         })
+
+    # Los documentos historicos no tienen actividad asociada. La vista se limita
+    # a consulta y no concede acceso por si misma al archivo: descargar_documento_web
+    # conserva la comprobacion individual de permisos en abrir_documento().
+    puede_ver_documentos = request.user.has_perm("expedientes.view_documentoexpediente")
+    documentos_historicos = (
+        DocumentoExpediente.objects
+        .filter(expediente=expediente, actividad__isnull=True)
+        .order_by("pk")
+        if puede_ver_documentos else DocumentoExpediente.objects.none()
+    )
+
     return render(request, "expedientes/ruta_responsable.html", {
         "expediente": expediente,
         "estaciones": estaciones,
         "puede_avanzar": expediente.puede_avanzar(),
+        "documentos_historicos": documentos_historicos,
+        "puede_ver_documentos": puede_ver_documentos,
     })

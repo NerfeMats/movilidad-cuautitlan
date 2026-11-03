@@ -17,3 +17,9 @@ def documentos_pendientes(documentos):
 @register.filter
 def documentos_correccion(documentos):
     return [d for d in documentos if d.estado in ("REQUIERE_CORRECCION", "RECHAZADO")]
+
+
+@register.filter
+def documentos_visibles_alumno(documentos):
+    """No incluir siquiera nombres de documentos administrativos en la vista."""
+    return [d for d in documentos if d.visibilidad == "ALUMNO"]

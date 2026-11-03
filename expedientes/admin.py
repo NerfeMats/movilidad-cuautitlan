@@ -281,7 +281,43 @@ class ActividadExpedienteAdmin(admin.ModelAdmin):
 
 
 
-admin.site.register(DocumentoExpediente)
+@admin.register(DocumentoExpediente)
+class DocumentoExpedienteAdmin(admin.ModelAdmin):
+    """Inventario de consulta; la edición se realiza exclusivamente en el servicio."""
+    list_display = (
+        "id", "expediente", "nombre", "estado", "visibilidad",
+        "version", "fecha_carga", "descarga_privada",
+    )
+    list_select_related = ("expediente",)
+    search_fields = ("nombre", "expediente__alumno__username")
+    exclude = ("archivo",)
+    readonly_fields = (
+        "expediente", "actividad", "nombre", "nombre_archivo_original",
+        "estado", "visibilidad", "version", "fecha_carga", "observaciones",
+        "descarga_privada",
+    )
+    fields = readonly_fields
+
+    @admin.display(description="Archivo")
+    def descarga_privada(self, obj):
+        from django.urls import reverse
+        from django.utils.html import format_html
+        if not obj or not obj.pk or not obj.archivo.name.startswith("privado/"):
+            return "No disponible en almacenamiento privado"
+        return format_html(
+            '<a href="{}">Descargar por servicio privado</a>',
+            reverse("expedientes:documento_descargar", args=[obj.pk]),
+        )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 @admin.register(HistorialExpediente)
 class HistorialExpedienteAdmin(admin.ModelAdmin):
 

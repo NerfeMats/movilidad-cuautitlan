@@ -52,7 +52,7 @@ class AltaRealMVPTests(SimpleTestCase):
         formulario.clean()
         self.assertIn("estado", formulario._errors)
 
-    def test_alta_excepcional_requiere_motivo_y_recepcion(self):
+    def test_alta_excepcional_sin_fecha_requiere_justificacion_explicita(self):
         expediente = ExpedienteMovilidad(
             tipo_alta=ExpedienteMovilidad.TipoAlta.EXCEPCIONAL,
             estado_inicial=ExpedienteMovilidad.Estado.EN_REVISION,
@@ -61,7 +61,7 @@ class AltaRealMVPTests(SimpleTestCase):
         with self.assertRaises(ValidationError) as resultado:
             expediente.clean()
         self.assertIn("motivo_alta_excepcional", resultado.exception.message_dict)
-        self.assertIn("fecha_recepcion_area", resultado.exception.message_dict)
+        self.assertNotIn("fecha_recepcion_area", resultado.exception.message_dict)
 
     def test_alta_excepcional_con_datos_acreditados(self):
         expediente = ExpedienteMovilidad(
