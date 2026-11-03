@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django import forms
-# Register your models here.
-from django.contrib import admin
+from django.core.exceptions import ValidationError
 
 from .models import (
     ExpedienteMovilidad,
@@ -10,6 +9,42 @@ from .models import (
     DocumentoExpediente,
     HistorialExpediente,
 )
+
+
+
+class ExpedienteAltaAdminForm(forms.ModelForm):
+    """Evita contradicciones al registrar expedientes ya iniciados."""
+
+    class Meta:
+        model = ExpedienteMovilidad
+        fields = "__all__"
+
+    def clean(self):
+        data = super().clean()
+        if self.instance.pk is None:
+            inicial = data.get("estado_inicial")
+            tipo = data.get("tipo_alta")
+            if "estado" in self.fields:
+                # Mantiene las validaciones previas en formularios que
+                # explicitamente incluyen estado (tambien en pruebas 16).
+                actual = data.get("estado")
+                if tipo == ExpedienteMovilidad.TipoAlta.NORMAL and actual != ExpedienteMovilidad.Estado.INICIADO:
+                    self.add_error("estado", "El alta normal debe iniciar en Iniciado.")
+                if tipo == ExpedienteMovilidad.TipoAlta.EXCEPCIONAL and inicial and actual != inicial:
+                    self.add_error("estado", "En una incorporación excepcional el estado actual debe coincidir con el estado inicial declarado.")
+            elif inicial:
+                # En Django Admin el campo estado se omite durante el alta.
+                self.instance.estado = inicial
+        return data
+
+    def save(self, commit=True):
+        # Asignacion en servidor incluso si se invoca save() sin clean().
+        # En ediciones, el estado evoluciona exclusivamente por el flujo.
+        if self.instance.pk is None:
+            inicial = self.cleaned_data.get("estado_inicial")
+            if inicial:
+                self.instance.estado = inicial
+        return super().save(commit=commit)
 
 class ActividadExpedienteAdminForm(forms.ModelForm):
 
@@ -56,6 +91,7 @@ class ActividadExpedienteInline(admin.TabularInline):
         "estado",
         "fecha_limite",
         "fecha_completada",
+        "fecha_cumplimiento_real",
         "observaciones",
     )
 
@@ -67,6 +103,43 @@ class ActividadExpedienteInline(admin.TabularInline):
 
 @admin.register(ExpedienteMovilidad)
 class ExpedienteMovilidadAdmin(admin.ModelAdmin):
+    form = ExpedienteAltaAdminForm
+    # Avances masivos deshabilitados hasta validar las reglas institucionales.
+    actions = []
+
+    fieldsets = (
+        ("Identificación", {"fields": ("alumno", "convocatoria", "ies_destino", "activo")}),
+        ("Situación al registrar", {"fields": (
+            "tipo_alta", "origen", "estado_inicial", "estado",
+            "motivo_alta_excepcional", "observaciones",
+        )}),
+        ("Fechas: registro digital y hechos acreditados", {"fields": (
+            "fecha_inicio", "fecha_recepcion_area", "fecha_inicio_real_movilidad",
+            "fecha_actualizacion", "fecha_cierre",
+        )}),
+    )
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        if obj is not None:
+            return fieldsets
+        # Quitar el selector redundante solo durante el alta.
+        return tuple(
+            (
+                titulo,
+                {**opciones, "fields": tuple(
+                    campo for campo in opciones["fields"]
+                    if campo != "estado"
+                )},
+            )
+            for titulo, opciones in fieldsets
+        )
+
+    def get_exclude(self, request, obj=None):
+        excluidos = tuple(super().get_exclude(request, obj) or ())
+        if obj is None:
+            return tuple(dict.fromkeys((*excluidos, "estado")))
+        return excluidos or None
 
     list_display = (
     "alumno",
@@ -96,7 +169,26 @@ class ExpedienteMovilidadAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         es_nuevo = obj.pk is None
 
+        fecha_anterior = None
+        if change and "fecha_inicio_real_movilidad" in form.changed_data:
+            fecha_anterior = ExpedienteMovilidad.objects.only(
+                "fecha_inicio_real_movilidad"
+            ).get(pk=obj.pk).fecha_inicio_real_movilidad
+
         super().save_model(request, obj, form, change)
+
+        if change and "fecha_inicio_real_movilidad" in form.changed_data:
+            HistorialExpediente.objects.create(
+                expediente=obj,
+                usuario=request.user,
+                accion="Corrección de fecha de inicio real",
+                descripcion=(
+                    f"Fecha real de inicio de movilidad: {fecha_anterior or 'sin dato'} "
+                    f"-> {obj.fecha_inicio_real_movilidad or 'sin dato'}"
+                ),
+                estado_anterior=obj.estado,
+                estado_nuevo=obj.estado,
+            )
 
         if es_nuevo:
             obj.crear_actividades_iniciales()
@@ -120,10 +212,6 @@ class ExpedienteMovilidadAdmin(admin.ModelAdmin):
     def listo_para_avanzar(self, obj):
         return obj.puede_avanzar()
 
-    actions = [
-    "avanzar_estado_seleccionados",
-    ]
-
     def get_readonly_fields(self, request, obj=None):
 
         if obj:
@@ -142,33 +230,6 @@ class ExpedienteMovilidadAdmin(admin.ModelAdmin):
             "fecha_actualizacion",
             "fecha_cierre",
         )
-
-    @admin.action(description="Avanzar estado de los expedientes seleccionados")
-    def avanzar_estado_seleccionados(self, request, queryset):
-
-        avanzados = 0
-        no_avanzados = 0
-
-        for expediente in queryset:
-
-            if expediente.avanzar_estado(usuario=request.user):
-                avanzados += 1
-            else:
-                no_avanzados += 1
-
-        if avanzados:
-            self.message_user(
-                request,
-                f"{avanzados} expediente(s) avanzaron de estado.",
-                level="SUCCESS",
-            )
-
-        if no_avanzados:
-            self.message_user(
-                request,
-                f"{no_avanzados} expediente(s) no pudieron avanzar.",
-                level="WARNING",
-            )
 
 @admin.register(ActividadProceso)
 class ActividadProcesoAdmin(admin.ModelAdmin):

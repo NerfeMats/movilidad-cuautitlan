@@ -155,6 +155,16 @@ class ExpedienteMovilidad(models.Model):
         auto_now_add=True,
     )
 
+    fecha_inicio_real_movilidad = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha real de inicio de movilidad",
+        help_text=(
+            "Fecha acreditada de inicio de la movilidad, si se conoce. "
+            "No sustituye la fecha de registro digital del expediente."
+        ),
+    )
+
     fecha_recepcion_area = models.DateField(
         null=True,
         blank=True,
@@ -479,6 +489,16 @@ class ActividadExpediente(models.Model):
     fecha_limite = models.DateField(
         null=True,
         blank=True,
+    )
+
+    fecha_cumplimiento_real = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fecha real de cumplimiento",
+        help_text=(
+            "Fecha histórica acreditada, cuando se conozca. "
+            "La fecha de completado es la marca técnica del sistema."
+        ),
     )
 
     fecha_completada = models.DateTimeField(
