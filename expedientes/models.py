@@ -7,6 +7,7 @@ from convocatorias.models import (
     Convocatoria,
     ConvocatoriaIES,
     TipoMovilidad,
+    IES,
 )
 from django.core.exceptions import ValidationError
 
@@ -792,6 +793,68 @@ class RecordatorioSeguimiento(models.Model):
 
     def __str__(self):
         return self.asunto
+
+class UniversidadCandidataExpediente(models.Model):
+    """Alternativa documental del alumno; no constituye aceptación ni destino definitivo."""
+
+    class Estado(models.TextChoices):
+        PROPUESTA = "PROPUESTA", "Propuesta en documentación"
+        POSTULADA = "POSTULADA", "Postulación acreditada"
+        RESPUESTA_PENDIENTE = "RESPUESTA_PENDIENTE", "Respuesta pendiente"
+        ACEPTADA = "ACEPTADA", "Aceptación acreditada"
+        DESCARTADA = "DESCARTADA", "Descartada"
+
+    expediente = models.ForeignKey(
+        ExpedienteMovilidad, on_delete=models.CASCADE,
+        related_name="universidades_candidatas",
+    )
+    ies = models.ForeignKey(
+        IES, on_delete=models.PROTECT, related_name="candidaturas_movilidad",
+    )
+    estado = models.CharField(
+        max_length=24, choices=Estado.choices, default=Estado.PROPUESTA,
+    )
+    documento = models.ForeignKey(
+        DocumentoExpediente, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="candidaturas_universitarias",
+        help_text="Documento de evidencia perteneciente al mismo expediente.",
+    )
+    observaciones = models.TextField(blank=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["pk"]
+        verbose_name = "Universidad candidata de expediente"
+        verbose_name_plural = "Universidades candidatas de expedientes"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["expediente", "ies"],
+                name="universidad_unica_por_expediente",
+            ),
+        ]
+
+    def clean(self):
+        errores = {}
+        if self.documento_id and self.expediente_id:
+            if self.documento.expediente_id != self.expediente_id:
+                errores["documento"] = "El documento debe pertenecer al mismo expediente."
+        if self.estado in (self.Estado.POSTULADA, self.Estado.ACEPTADA):
+            if not self.documento_id and not self.observaciones.strip():
+                errores["observaciones"] = (
+                    "Para acreditar este estado indique la evidencia en observaciones "
+                    "o vincule un documento verificable."
+                )
+        if errores:
+            raise ValidationError(errores)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.ies} - {self.get_estado_display()}"
+
 
 # Fase 2: modelos de reglas (sin activar la nueva evaluaciÃ³n de avance).
 from .reglas_configuracion import (

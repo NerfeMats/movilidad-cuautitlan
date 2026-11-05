@@ -10,6 +10,33 @@
 <a href="{% url 'expedientes:panel_responsable' %}" class="btn btn-outline-secondary mb-3">← Volver al panel</a>
 <h1>Ruta de movilidad — {{ expediente.alumno.get_full_name|default:expediente.alumno.username }}</h1>
 <p>{{ expediente.convocatoria.titulo }} · Estado real: <strong>{{ expediente.get_estado_display }}</strong></p>
+{% if expediente.ies_destino_id %}
+<div class="alert alert-light border mb-3" role="note" aria-label="Universidad de destino registrada">
+  <div><strong>Universidad de destino:</strong> {{ expediente.ies_destino.ies.nombre }}{% if expediente.ies_destino.ies.pais %} · {{ expediente.ies_destino.ies.pais }}{% endif %}</div>
+  <div class="small text-muted mt-1">Destino registrado administrativamente. La asignación del destino no acredita por sí sola una carta de aceptación ni que la movilidad haya comenzado.</div>
+</div>
+{% else %}
+<p class="text-muted small">Universidad de destino: aún no registrada.</p>
+{% endif %}
+{% with candidatas=expediente.universidades_candidatas.all %}
+{% if candidatas %}
+<section class="card mb-3" aria-labelledby="titulo-universidades-candidatas">
+  <div class="card-body">
+    <h2 id="titulo-universidades-candidatas" class="h5">Universidades candidatas</h2>
+    <p class="small text-muted">Alternativas documentadas para este expediente. No acreditan por sí solas postulación, aceptación ni selección definitiva.</p>
+    <ul class="list-group list-group-flush">
+      {% for alternativa in candidatas %}
+      <li class="list-group-item">
+        <strong>{{ alternativa.ies.nombre }}</strong>{% if alternativa.ies.pais %} · {{ alternativa.ies.pais }}{% endif %}
+        — <span>{{ alternativa.get_estado_display }}</span>
+        {% if alternativa.observaciones %}<div class="small text-muted">{{ alternativa.observaciones }}</div>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endif %}
+{% endwith %}
 <div class="rm3" id="ruta-responsable">
 <p class="rm3-eyebrow">MAPA DE SEGUIMIENTO · SOLO LECTURA</p>
 <h2 class="rm3-heading">{% if expediente.estado == "CANCELADO" %}Expediente cancelado{% else %}Usted está aquí: {{ expediente.get_estado_display }}{% endif %}</h2>

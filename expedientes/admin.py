@@ -101,6 +101,18 @@ class ActividadExpedienteInline(admin.TabularInline):
     )
 
 
+from .models import UniversidadCandidataExpediente
+
+
+class UniversidadCandidataInline(admin.TabularInline):
+    model = UniversidadCandidataExpediente
+    extra = 0
+    can_delete = False
+    fields = ("ies", "estado", "observaciones")
+    verbose_name = "Universidad candidata"
+    verbose_name_plural = "Universidades candidatas (no implica aceptación)"
+
+
 @admin.register(ExpedienteMovilidad)
 class ExpedienteMovilidadAdmin(admin.ModelAdmin):
     form = ExpedienteAltaAdminForm
@@ -165,6 +177,7 @@ class ExpedienteMovilidadAdmin(admin.ModelAdmin):
     )
     inlines = [
         ActividadExpedienteInline,
+        UniversidadCandidataInline,
         ]
     def save_model(self, request, obj, form, change):
         es_nuevo = obj.pk is None
@@ -416,5 +429,17 @@ class RecordatorioSeguimientoAdmin(admin.ModelAdmin):
             obj.creado_por = request.user
         obj.full_clean()
         super().save_model(request, obj, form, change)
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(UniversidadCandidataExpediente)
+class UniversidadCandidataAdmin(admin.ModelAdmin):
+    list_display = ("id", "expediente", "ies", "estado", "fecha_actualizacion")
+    list_select_related = ("expediente", "ies")
+    list_filter = ("estado",)
+    search_fields = ("expediente__alumno__username", "ies__nombre")
+    readonly_fields = ("fecha_registro", "fecha_actualizacion")
+
     def has_delete_permission(self, request, obj=None):
         return False
