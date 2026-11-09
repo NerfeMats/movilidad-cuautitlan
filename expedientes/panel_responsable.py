@@ -142,3 +142,38 @@ def mis_pendientes(request):
     return render(request, "expedientes/mis_pendientes.html", {
         "actividades": actividades, "acciones": acciones, "hoy": timezone.localdate(),
     })
+
+
+@login_required
+def inventario_documental_responsable(request, pk):
+    """Inventario global del expediente, fuera de las estaciones del recorrido."""
+    if not es_responsable_autorizado(request.user):
+        raise PermissionDenied("No tiene permiso para consultar expedientes ajenos.")
+    if not request.user.has_perm("expedientes.view_documentoexpediente"):
+        raise PermissionDenied("No tiene permiso para consultar documentos.")
+
+    expediente = get_object_or_404(
+        ExpedienteMovilidad.objects.select_related("alumno", "convocatoria"),
+        pk=pk,
+    )
+    documentos_historicos = (
+        DocumentoExpediente.objects.filter(
+            expediente=expediente, actividad__isnull=True
+        ).order_by("pk")
+    )
+    documentos_vinculados = (
+        DocumentoExpediente.objects.filter(
+            expediente=expediente, actividad__isnull=False
+        ).select_related("actividad__actividad_proceso").order_by("pk")
+    )
+    actividades_vinculables = (
+        ActividadExpediente.objects.filter(expediente=expediente)
+        .select_related("actividad_proceso").order_by("pk")
+    )
+    return render(request, "expedientes/inventario_documental.html", {
+        "expediente": expediente,
+        "puede_ver_documentos": True,
+        "documentos_historicos": documentos_historicos,
+        "documentos_vinculados": documentos_vinculados,
+        "actividades_vinculables": actividades_vinculables,
+    })

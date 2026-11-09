@@ -110,8 +110,20 @@ class SeguridadHistoricaHTTPTests(TransactionTestCase):
         self.client.force_login(self.responsable)
         respuesta = self.client.get(self.url_ruta)
         self.assertEqual(respuesta.status_code, 200)
-        self.assertContains(respuesta, "Inventario documental")
-        self.assertContains(respuesta, self.url_descarga)
+        url_inventario = reverse(
+            "expedientes:inventario_documental_responsable",
+            args=[self.expediente.pk],
+        )
+        # La ruta solo ofrece el enlace; el inventario no se renderiza en etapas.
+        self.assertContains(respuesta, url_inventario)
+        self.assertNotContains(respuesta, self.url_descarga)
+        self.assertNotContains(respuesta, "Constancia historica ficticia")
+        # El inventario en su pagina propia conserva el documento y la descarga.
+        respuesta_inventario = self.client.get(url_inventario)
+        self.assertEqual(respuesta_inventario.status_code, 200)
+        self.assertContains(respuesta_inventario, "Inventario documental")
+        self.assertContains(respuesta_inventario, self.url_descarga)
+        self.assertContains(respuesta_inventario, self.documento.nombre_archivo_original)
         self.assertEqual(
             DocumentoExpediente.objects.filter(expediente=self.expediente).count(), 1
         )
@@ -133,3 +145,10 @@ class SeguridadHistoricaHTTPTests(TransactionTestCase):
         self.assertEqual(respuesta.status_code, 200)
         self.assertNotContains(respuesta, self.url_descarga)
         self.assertNotContains(respuesta, "Constancia historica ficticia")
+        url_inventario = reverse(
+            "expedientes:inventario_documental_responsable",
+            args=[self.expediente.pk],
+        )
+        with self.assertLogs("django.request", level="WARNING"):
+            respuesta_inventario = self.client.get(url_inventario)
+        self.assertEqual(respuesta_inventario.status_code, 403)
