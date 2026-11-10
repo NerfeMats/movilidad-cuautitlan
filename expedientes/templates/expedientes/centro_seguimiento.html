@@ -7,6 +7,104 @@
 <p>Actividades de etapa actual y gestiones administrativas adicionales, agrupadas por expediente. Los plazos no registrados no son vencimientos.</p>
 <p><strong>Hoy:</strong> {{ hoy|date:"d/m/Y" }} · <strong>Expedientes con pendientes:</strong> {{ grupos|length }} · <strong>Actividades actuales:</strong> {{ total_actividades }} · <strong>Acciones adicionales:</strong> {{ total_acciones }} · <strong>Borradores:</strong> {{ borradores }} (no enviados)</p>
 <p><a href="{% url 'admin:expedientes_accionseguimiento_add' %}" class="btn btn-outline-primary">Nueva acción administrativa</a> <a href="{% url 'admin:expedientes_recordatorioseguimiento_add' %}" class="btn btn-outline-primary">Preparar recordatorio</a></p>
+<div class="d-flex flex-wrap gap-2 my-3" role="navigation" aria-label="Perspectivas del Centro de Seguimiento">
+  <a class="btn {% if vista == 'pendientes' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'expedientes:centro_seguimiento' %}">Pendientes actuales</a>
+  <a class="btn {% if vista == 'inventario' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'expedientes:centro_seguimiento' %}?vista=inventario">Inventario de responsabilidades</a>
+  <a class="btn {% if vista == 'reglas' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'expedientes:centro_seguimiento' %}?vista=reglas">Diagnóstico de reglas</a>
+</div>
+{% if vista == 'reglas' %}
+<h2>Diagnóstico consultivo de reglas</h2>
+<p class="text-muted">Consulta informativa de la etapa actual. No autoriza el avance, no verifica la suficiencia de la evidencia ni modifica el expediente. La falta de configuración es una incidencia administrativa, no un incumplimiento del alumno.</p>
+<form method="get" class="row g-2 align-items-end mb-3" aria-label="Selección de expediente para diagnóstico">
+  <input type="hidden" name="vista" value="reglas">
+  <div class="col-md-8">
+    <label for="expediente-reglas" class="form-label">Expediente</label>
+    <select id="expediente-reglas" class="form-select" name="expediente" onchange="this.form.requestSubmit()">
+      <option value="">Seleccione un expediente activo</option>
+      {% for e in expedientes_reglas %}<option value="{{ e.pk }}" {% if expediente_reglas_id == e.pk|stringformat:'s' %}selected{% endif %}>#{{ e.pk }} — {{ e.alumno.get_full_name|default:e.alumno.username }} · {{ e.get_estado_display }}</option>{% endfor %}
+    </select>
+  </div>
+  <noscript><div class="col-md-4"><button class="btn btn-primary" type="submit">Consultar diagnóstico</button></div></noscript>
+</form>
+{% if expediente_reglas %}
+  <h3 class="h5">{{ expediente_reglas.alumno.get_full_name|default:expediente_reglas.alumno.username }} · Expediente #{{ expediente_reglas.pk }}</h3>
+  <p><strong>Etapa:</strong> {{ expediente_reglas.get_estado_display }} · <strong>Diagnóstico:</strong>
+    {% if resultado_reglas_estado == 'SIN_CONFIGURAR' %}Configuración pendiente
+    {% elif resultado_reglas_estado == 'BLOQUEADO' %}Bloqueado según reglas modeladas
+    {% elif resultado_reglas_estado == 'PERMITIDO' %}Reglas modeladas satisfechas (no es autorización)
+    {% else %}{{ resultado_reglas_estado }}{% endif %}
+  </p>
+  <p><a class="btn btn-sm btn-outline-secondary" href="{% url 'expedientes:ruta_responsable' expediente_reglas.pk %}">Ver expediente</a></p>
+  {% for aviso in avisos_reglas %}<p class="small text-muted">{{ aviso }}</p>{% endfor %}
+  <div class="table-responsive"><table class="table table-striped align-middle">
+    <thead><tr><th>Actividad</th><th>Política</th><th>Estado registrado</th><th>Diagnóstico</th><th>Motivo</th><th>Documentos (aprobados/registrados)</th></tr></thead>
+    <tbody>
+    {% for d in detalles_reglas %}<tr>
+      <td>{{ d.nombre }}</td><td>{{ d.politica }}</td><td>{{ d.estado_actividad }}</td>
+      <td>{% if d.diagnostico == 'SIN_CONFIGURAR' %}Configuración pendiente{% else %}{{ d.diagnostico }}{% endif %}</td>
+      <td>{{ d.motivo }}</td><td>{{ d.aprobados }}/{{ d.documentos }}</td>
+    </tr>{% empty %}<tr><td colspan="6">No hay actividades evaluables en esta etapa.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+{% elif expediente_reglas_id %}
+<div class="alert alert-light border">No se encontró un expediente activo con ese identificador.</div>
+{% else %}
+<div class="alert alert-light border">Seleccione un expediente para consultar su diagnóstico.</div>
+{% endif %}
+{% elif vista == 'inventario' %}
+<h2>Inventario de responsabilidades por expediente</h2>
+<p class="text-muted">Consulta de solo lectura de todas las actividades registradas en expedientes activos, incluidas etapas anteriores y futuras. El responsable es el ejecutor registrado en el catálogo; no implica verificación ni aprobación institucional.</p>
+<form method="get" class="row g-2 align-items-end mb-3" aria-label="Filtros del inventario">
+  <input type="hidden" name="vista" value="inventario">
+  <div class="col-md-3"><label class="form-label" for="fil-responsable">Ejecutor</label>
+    <select class="form-select" id="fil-responsable" onchange="this.form.requestSubmit()" name="responsable"><option value="">Todos</option>
+      {% for valor, etiqueta in opciones_responsable %}<option value="{{ valor }}" {% if filtro_responsable == valor %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3"><label class="form-label" for="fil-etapa">Etapa de la actividad</label>
+    <select class="form-select" id="fil-etapa" onchange="this.form.requestSubmit()" name="etapa"><option value="">Todas</option>
+      {% for valor, etiqueta in opciones_etapa %}<option value="{{ valor }}" {% if filtro_etapa == valor %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2"><label class="form-label" for="fil-estado">Estado de actividad</label>
+    <select class="form-select" id="fil-estado" onchange="this.form.requestSubmit()" name="estado"><option value="">Todos</option>
+      {% for valor, etiqueta in opciones_estado %}<option value="{{ valor }}" {% if filtro_estado == valor %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3"><label class="form-label" for="fil-expediente">Expediente</label>
+    <select class="form-select" id="fil-expediente" onchange="this.form.requestSubmit()" name="expediente"><option value="">Todos los activos</option>
+      {% for e in expedientes_filtro %}<option value="{{ e.pk }}" {% if filtro_expediente == e.pk|stringformat:'s' %}selected{% endif %}>#{{ e.pk }} — {{ e.alumno.get_full_name|default:e.alumno.username }}</option>{% endfor %}
+    </select>
+  </div>
+  <noscript><div class="col-12"><button type="submit" class="btn btn-primary">Aplicar filtros</button></div></noscript>
+</form>
+<p><strong>Actividades encontradas:</strong> {{ total_inventario }} · <strong>Expedientes:</strong> {{ grupos_inventario|length }}</p>
+{% for grupo in grupos_inventario %}
+<details class="card mb-3" {% if grupos_inventario|length == 1 %}open{% endif %}>
+  <summary class="card-header p-3" style="cursor:pointer;">
+    <strong>{{ grupo.expediente.alumno.get_full_name|default:grupo.expediente.alumno.username }}</strong>
+    <span class="text-muted"> · Expediente #{{ grupo.expediente.pk }} · {{ grupo.expediente.get_estado_display }}</span>
+    <span class="d-block small text-primary">{{ grupo.actividades|length }} actividad{{ grupo.actividades|length|pluralize }} · Mostrar u ocultar inventario</span>
+  </summary>
+  <div class="card-body">
+    <p><a href="{% url 'expedientes:ruta_responsable' grupo.expediente.pk %}" class="btn btn-sm btn-outline-secondary">Ver expediente</a></p>
+    <div class="table-responsive"><table class="table table-striped align-middle">
+      <thead><tr><th>Etapa</th><th>Actividad</th><th>Ejecutor registrado</th><th>Estado</th><th>Obligatoria</th><th>Fecha límite</th></tr></thead><tbody>
+      {% for a in grupo.actividades %}<tr>
+        <td>{{ a.actividad_proceso.get_estado_expediente_display }}</td>
+        <td>{{ a.actividad_proceso.nombre }}</td>
+        <td>{{ a.actividad_proceso.get_responsable_display }}</td>
+        <td>{{ a.get_estado_display }}</td>
+        <td>{% if a.actividad_proceso.obligatorio %}Sí{% else %}No{% endif %}</td>
+        <td>{{ a.fecha_limite|date:"d/m/Y"|default:"Sin fecha registrada" }}</td>
+      </tr>{% endfor %}
+      </tbody></table></div>
+  </div>
+</details>
+{% empty %}
+<div class="alert alert-light border">No hay actividades que coincidan con los filtros.</div>
+{% endfor %}
+{% else %}
 <h2>Expedientes con seguimiento pendiente</h2>
 {% for grupo in grupos %}
 <details class="card mb-3" {% if grupos|length == 1 %}open{% endif %}>
@@ -43,5 +141,6 @@
 </details>
 {% empty %}<div class="alert alert-light border">No existen actividades actuales ni acciones adicionales pendientes.</div>{% endfor %}
 <p class="text-muted small">Los recordatorios son borradores; esta versión no envía correos ni notificaciones automáticas. Las actividades futuras no se consideran vencidas.</p>
+{% endif %}
 </div></section>
 {% endblock %}
