@@ -1,0 +1,14 @@
+{% extends "expedientes/base_responsable.html" %}
+{% block title %}Estudiantes y movilidades | Centro de Gestión{% endblock %}
+{% block content %}
+<div class="cg-workspace">
+  <nav class="cg-breadcrumb" aria-label="Ruta de navegación"><a href="{% url 'expedientes:panel_responsable' %}">Mi jornada</a><span aria-hidden="true">/</span><span aria-current="page">Estudiantes y movilidades</span></nav>
+  <div class="cg-page-head"><div><span class="cg-label">GESTIÓN ACADÉMICA</span><h1>Estudiantes y movilidades</h1><p>Consulta de expedientes registrados. Abrir una ficha no modifica su situación.</p></div><span class="cg-count">{{ expedientes|length }} expedientes</span></div>
+  <section class="cg-card" aria-label="Listado de expedientes">
+    <div class="cg-table-wrap"><table class="cg-table"><thead><tr><th>Estudiante</th><th>Convocatoria</th><th>Etapa registrada</th><th>Consulta</th></tr></thead><tbody>
+      {% for e in expedientes %}<tr><td><strong>{{ e.alumno.get_full_name|default:e.alumno.username }}</strong><small>Expediente #{{ e.pk }}</small></td><td>{{ e.convocatoria.titulo }}</td><td>{{ e.get_estado_display }}</td><td><a class="cg-link" href="{% url 'expedientes:ruta_responsable' e.pk %}">Abrir expediente</a></td></tr>
+      {% empty %}<tr><td colspan="4">No hay expedientes registrados.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+</div>
+{% endblock %}

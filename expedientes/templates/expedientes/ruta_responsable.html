@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "expedientes/base_responsable.html" %}
 {% load static actividades_presentacion %}
 {% block title %}Ruta de expediente | Responsable{% endblock %}
 {% block extra_css %}
@@ -6,42 +6,30 @@
 <link rel="stylesheet" href="{% static 'expedientes/ruta_actividades.css' %}">
 {% endblock %}
 {% block content %}
-<section class="seccion"><div class="container">
-<a href="{% url 'expedientes:panel_responsable' %}" class="btn btn-outline-secondary mb-3">← Volver al panel</a>
-<h1>Ruta de movilidad — {{ expediente.alumno.get_full_name|default:expediente.alumno.username }}</h1>
-<p>{{ expediente.convocatoria.titulo }} · Estado real: <strong>{{ expediente.get_estado_display }}</strong></p>
-{% if expediente.ies_destino_id %}
-<div class="alert alert-light border mb-3" role="note" aria-label="Universidad de destino registrada">
-  <div><strong>Universidad de destino:</strong> {{ expediente.ies_destino.ies.nombre }}{% if expediente.ies_destino.ies.pais %} · {{ expediente.ies_destino.ies.pais }}{% endif %}</div>
-  <div class="small text-muted mt-1">Destino registrado administrativamente. La asignación del destino no acredita por sí sola una carta de aceptación ni que la movilidad haya comenzado.</div>
-</div>
-{% else %}
-<p class="text-muted small">Universidad de destino: aún no registrada.</p>
-{% endif %}
-{% with candidatas=expediente.universidades_candidatas.all %}
-{% if candidatas %}
-<section class="card mb-3" aria-labelledby="titulo-universidades-candidatas">
-  <div class="card-body">
-    <h2 id="titulo-universidades-candidatas" class="h5">Universidades candidatas</h2>
-    <p class="small text-muted">Alternativas documentadas para este expediente. No acreditan por sí solas postulación, aceptación ni selección definitiva.</p>
-    <ul class="list-group list-group-flush">
-      {% for alternativa in candidatas %}
-      <li class="list-group-item">
-        <strong>{{ alternativa.ies.nombre }}</strong>{% if alternativa.ies.pais %} · {{ alternativa.ies.pais }}{% endif %}
-        — <span>{{ alternativa.get_estado_display }}</span>
-        {% if alternativa.observaciones %}<div class="small text-muted">{{ alternativa.observaciones }}</div>{% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-</section>
-{% endif %}
-{% endwith %}
-{% if puede_ver_documentos %}
-<nav class="mb-4" aria-label="Gestión documental del expediente">
-  <a class="btn btn-outline-secondary" href="{% url 'expedientes:inventario_documental_responsable' expediente.pk %}">Consultar inventario documental del expediente</a>
-</nav>
-{% endif %}
+<div class="cg-workspace cg-expediente">
+  <a class="cg-back" href="{% url 'expedientes:estudiantes_responsable' %}">← Estudiantes y movilidades</a>
+  <div class="cg-case-heading"><div><span class="cg-label">EXPEDIENTE #{{ expediente.pk }}</span><h1>{{ expediente.alumno.get_full_name|default:expediente.alumno.username }}</h1><p>{{ expediente.convocatoria.titulo }} · {{ expediente.get_estado_display }}</p></div><span class="cg-pill">Consulta administrativa</span></div>
+  <nav class="cg-tabs" aria-label="Secciones del expediente">
+    <a href="#resumen" data-cg-tab="resumen" class="active" aria-current="page">Resumen</a>
+    <a href="#ruta" data-cg-tab="ruta">Usted está aquí</a>
+    <a href="#actividades" data-cg-tab="actividades">Actividades</a>
+    <a href="#documentos" data-cg-tab="documentos">Documentos</a>
+    <a href="#instituciones" data-cg-tab="instituciones">Instituciones</a>
+    <a href="#historial" data-cg-tab="historial">Historial</a>
+  </nav>
+  <section id="cg-tab-resumen" class="cg-tab-panel cg-card" aria-label="Resumen del expediente">
+    <div class="cg-section-head"><div><h2>Situación de la movilidad</h2><p>Resumen de la información registrada. Un destino registrado no acredita por sí sola una carta de aceptación ni una movilidad realizada.</p></div></div>
+    <div class="cg-facts">
+      <div><small>Etapa registrada</small><strong>{{ expediente.get_estado_display }}</strong></div>
+      <div><small>Convocatoria</small><strong>{{ expediente.convocatoria.titulo }}</strong></div>
+      <div><small>Universidad de destino registrada</small><strong>{% if expediente.ies_destino_id %}{{ expediente.ies_destino.ies.nombre }}{% else %}No registrada{% endif %}</strong></div>
+      <div><small>Condición de avance (modelo actual)</small><strong>{% if puede_avanzar %}Sin bloqueos del modelo tradicional{% else %}Existen condiciones pendientes o estado terminal{% endif %}</strong></div>
+    </div>
+    <p class="cg-footnote">La condición de avance no verifica por sí misma suficiencia documental ni representa autorización administrativa. Las reglas consultivas se muestran por separado en seguimiento.</p>
+    <div class="cg-actions"><a class="cg-button" href="#ruta" data-cg-tab="ruta">Ver recorrido</a><a class="cg-button cg-button-plain" href="#documentos" data-cg-tab="documentos">Examinar documentos</a></div>
+  </section>
+  <section id="cg-tab-ruta" class="cg-tab-panel" hidden aria-label="Ruta Usted está aquí">
+    <div class="cg-card"><h2>Tu ruta de movilidad académica</h2><p class="cg-muted">Recorrido completo; seleccionar una estación no modifica el estado del expediente.</p>
 <div class="rm3" id="ruta-responsable">
 <p class="rm3-eyebrow">MAPA DE SEGUIMIENTO · SOLO LECTURA</p>
 <h2 class="rm3-heading">{% if expediente.estado == "CANCELADO" %}Expediente cancelado{% else %}Usted está aquí: {{ expediente.get_estado_display }}{% endif %}</h2>
@@ -103,6 +91,43 @@
 {% else %}<p class="mt-3"><strong>Condición de la etapa actual ({{ expediente.get_estado_display }}):</strong> todavía existen condiciones pendientes para avanzar. Este mensaje no se refiere necesariamente a la estación consultada.</p>{% endif %}
 </div>
 
-</div></section>
+    </div>
+  </section>
+  <section id="cg-tab-actividades" class="cg-tab-panel cg-card" hidden aria-label="Actividades del expediente"><h2>Actividades de la etapa actual</h2><p class="cg-muted">El ejecutor registrado y quien supervisa pueden ser personas distintas. Las actividades de otras etapas se consultan en el recorrido.</p>
+    <div class="cg-table-wrap"><table class="cg-table"><thead><tr><th>Actividad</th><th>Ejecutor</th><th>Estado</th></tr></thead><tbody>
+    {% for estacion in estaciones %}{% if estacion.situacion == 'actual' %}{% for a in estacion.actividades %}<tr><td>{{ a.actividad_proceso.nombre }}</td><td>{{ a.actividad_proceso.get_responsable_display }}</td><td>{{ a.get_estado_display }}</td></tr>{% empty %}<tr><td colspan="3">Sin actividades registradas en esta etapa.</td></tr>{% endfor %}{% endif %}{% endfor %}
+    </tbody></table></div><a class="cg-link" href="{% url 'expedientes:centro_seguimiento' %}?vista=reglas&amp;expediente={{ expediente.pk }}">Consultar diagnóstico de reglas</a>
+  </section>
+  <section id="cg-tab-documentos" class="cg-tab-panel cg-card" hidden aria-label="Documentos del expediente">
+    <h2>Documentos del expediente</h2>
+    {% if puede_ver_documentos %}
+      <p class="cg-muted">Consulta el inventario documental reservado para examinar archivos históricos, revisar documentos vinculados y gestionar sus asociaciones con actividades.</p>
+      <p>Para preservar la separación del inventario histórico, las descargas y su listado completo se presentan exclusivamente en la vista documental protegida.</p>
+      <div class="cg-actions">
+        <a class="cg-button" href="{% url 'expedientes:inventario_documental_responsable' expediente.pk %}">Abrir inventario documental</a>
+        <a class="cg-button cg-button-plain" href="#ruta" data-cg-tab="ruta">Ver documentos asociados a actividades</a>
+      </div>
+      <p class="cg-footnote">La documentación de una actividad puede consultarse en su estación de la ruta, conforme a los permisos vigentes. La existencia de un archivo no acredita aprobación ni homologación.</p>
+    {% else %}
+      <p>No tienes permiso para consultar los archivos de este expediente.</p>
+    {% endif %}
+  </section>
+  <section id="cg-tab-instituciones" class="cg-tab-panel cg-card" hidden aria-label="Instituciones"><h2>Instituciones y destino</h2>
+    {% if expediente.ies_destino_id %}<p><strong>Destino registrado:</strong> {{ expediente.ies_destino.ies.nombre }}{% if expediente.ies_destino.ies.pais %} · {{ expediente.ies_destino.ies.pais }}{% endif %}</p>{% else %}<p>Universidad de destino: aún no registrada.</p>{% endif %}
+    <p class="cg-footnote">La selección administrativa de una IES no equivale a su carta de aceptación.</p>
+    {% with candidatas=expediente.universidades_candidatas.all %}
+    {% if candidatas %}
+    <h3 class="h5">Universidades candidatas</h3>
+    <p class="cg-footnote">Alternativas documentadas. No acreditan por sí solas la postulación, aceptación ni selección definitiva.</p>
+    <div class="cg-table-wrap"><table class="cg-table"><thead><tr><th>Institución candidata</th><th>Situación registrada</th></tr></thead><tbody>
+    {% for alternativa in candidatas %}<tr><td>{{ alternativa.ies.nombre }}{% if alternativa.ies.pais %} · {{ alternativa.ies.pais }}{% endif %}</td><td>{{ alternativa.get_estado_display }}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% endif %}
+    {% endwith %}
+  </section>
+  <section id="cg-tab-historial" class="cg-tab-panel cg-card" hidden aria-label="Historial"><h2>Historial y comunicaciones</h2><p class="cg-muted">Registro de las actuaciones almacenadas en el expediente, sin inferir aprobación ni recepción.</p>
+    {% for h in expediente.historial.all %}<div class="cg-history"><strong>{{ h.accion }}</strong><small>{{ h.fecha|date:"d/m/Y H:i" }}</small>{% if h.descripcion %}<p>{{ h.descripcion }}</p>{% endif %}</div>{% empty %}<p>No hay eventos de historial registrados.</p>{% endfor %}
+  </section>
+</div>
 {% endblock %}
-{% block extra_js %}<script defer src="{% static 'expedientes/ruta_responsable.js' %}"></script>{% endblock %}
+{% block extra_js %}<script defer src="{% static 'expedientes/ruta_responsable.js' %}"></script><script defer src="{% static 'expedientes/expediente_tabs_v211.js' %}"></script>{% endblock %}

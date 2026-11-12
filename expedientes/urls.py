@@ -25,6 +25,7 @@ from . import panel_responsable
 
 urlpatterns += [
     path("responsable/", panel_responsable.panel_responsable, name="panel_responsable"),
+    path("responsable/estudiantes/", panel_responsable.estudiantes_responsable, name="estudiantes_responsable"),
     path("responsable/<int:pk>/", panel_responsable.ruta_responsable, name="ruta_responsable"),
     path("responsable/<int:pk>/documentos/", panel_responsable.inventario_documental_responsable, name="inventario_documental_responsable"),
 ]

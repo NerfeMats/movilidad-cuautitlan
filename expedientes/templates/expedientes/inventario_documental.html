@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "expedientes/base_responsable.html" %}
 {% block title %}Inventario documental | Responsable{% endblock %}
 {% block content %}
 <section class="seccion">
   <div class="container">
-    <a href="{% url 'expedientes:ruta_responsable' expediente.pk %}" class="btn btn-outline-secondary mb-3">← Volver a la ruta de movilidad</a>
+    <nav class="cg-breadcrumb" aria-label="Ruta de navegación"><a href="{% url 'expedientes:estudiantes_responsable' %}">Estudiantes y movilidades</a><span aria-hidden="true">/</span><a href="{% url 'expedientes:ruta_responsable' expediente.pk %}">{{ expediente.alumno.get_full_name|default:expediente.alumno.username }}</a><span aria-hidden="true">/</span><span aria-current="page">Inventario documental</span></nav>
     <h1>Inventario documental del expediente</h1>
     <p><strong>{{ expediente.alumno.get_full_name|default:expediente.alumno.username }}</strong> · {{ expediente.convocatoria.titulo }}</p>
     <p class="text-muted">Este inventario pertenece al expediente completo, no a una etapa del recorrido.</p>

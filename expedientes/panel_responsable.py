@@ -25,10 +25,28 @@ def panel_responsable(request):
         .select_related("alumno", "convocatoria", "convocatoria__tipo_movilidad")
         .order_by("-fecha_inicio")
     )
+    from .jornada_presentacion_v211 import construir_jornada
+    resumen = resumen_seguimiento()
+    jornada = construir_jornada(resumen["actividades"], resumen["acciones"], request.user)
     return render(request, "expedientes/panel_responsable.html", {
         "expedientes": expedientes,
-        "resumen_seguimiento": resumen_seguimiento(),
+        "resumen_seguimiento": resumen,
+        "jornada": jornada,
+        "hoy": resumen["hoy"],
     })
+
+
+
+@login_required
+def estudiantes_responsable(request):
+    if not es_responsable_autorizado(request.user):
+        raise PermissionDenied("No tiene permiso para consultar todos los expedientes.")
+    expedientes = (
+        ExpedienteMovilidad.objects
+        .select_related("alumno", "convocatoria", "convocatoria__tipo_movilidad")
+        .order_by("-fecha_inicio")
+    )
+    return render(request, "expedientes/estudiantes_responsable.html", {"expedientes": expedientes})
 
 
 @login_required

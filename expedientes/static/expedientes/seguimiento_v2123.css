@@ -1,0 +1,26 @@
+/* Seguimiento v21.2.3: jerarquia clara, paleta institucional y ayudas puntuales. */
+.cg-body .cg-follow-head {display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin:0 0 20px}
+.cg-body .cg-follow-head h1 {margin:0;font-size:clamp(1.45rem,2.3vw,1.95rem);line-height:1.3}
+.cg-body .cg-follow-actions {display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.cg-body .cg-action-with-help {display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.cg-body .cg-follow-btn {display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 14px;border-radius:8px;text-decoration:none!important;font-weight:650;font-size:.88rem;line-height:1.15;transition:background-color .13s,border-color .13s}
+.cg-body .cg-follow-btn-primary {background:#4c5f59;color:white!important;border:1px solid #4c5f59}
+.cg-body .cg-follow-btn-primary:hover {background:#304f43;color:white!important}
+.cg-body .cg-follow-btn-secondary {background:#fff;color:#304f43!important;border:1px solid #b3c0b9}
+.cg-body .cg-follow-btn-secondary:hover {background:#edf3ef;color:#304f43!important}
+.cg-body .cg-help-trigger {width:27px;height:27px;border-radius:50%;padding:0;background:#f2f5f3;border:1px solid #b8c8be;color:#315043;font-weight:750;font-size:.83rem;cursor:help;flex:none}
+.cg-body .cg-help-trigger:hover,.cg-body .cg-help-trigger:focus-visible {background:#e0ece4;outline:2px solid #648574;outline-offset:2px}
+.cg-body .cg-follow-tabs {display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #dce3e0;margin:0 0 25px;padding:0 0 0 2px}
+.cg-body .cg-follow-tab {display:inline-flex;align-items:center;padding:10px 17px;margin-bottom:-1px;border:0;border-bottom:3px solid transparent;background:transparent;text-decoration:none!important;color:#61726a!important;font-size:.91rem;font-weight:600}
+.cg-body .cg-follow-tab:hover {color:#304f43!important;background:#eef3ef}
+.cg-body .cg-follow-tab.is-active {border-bottom-color:#4c5f59;color:#304f43!important;font-weight:750}
+.cg-body .cg-follow-tab:focus-visible {outline:2px solid #648574;outline-offset:-3px}
+.cg-body .cg-follow-warning {font-size:.86rem;border-left:3px solid #4c5f59;padding:8px 12px;background:#f1f5f2;color:#465a50;margin-bottom:18px}
+.cg-body .cg-main .seccion>.container > h2 {margin:0 0 16px;font-size:1.23rem}
+.cg-body .cg-main .seccion>.container > p:not(.cg-follow-warning) {line-height:1.5}
+.cg-body .cg-main .seccion details.card {margin-bottom:13px!important}
+.cg-body .cg-main .seccion details summary {padding:15px 19px!important}
+.cg-body .cg-main .seccion .card-body {padding:18px 20px}
+.cg-body .cg-main .seccion .card-body h3 {margin-top:17px}
+@media(max-width:850px){.cg-body .cg-follow-head{align-items:flex-start}.cg-body .cg-follow-actions{width:100%}}
+@media(max-width:560px){.cg-body .cg-follow-actions{align-items:flex-start;flex-direction:column}.cg-body .cg-follow-tabs{gap:0}.cg-body .cg-follow-tab{padding:10px}}
