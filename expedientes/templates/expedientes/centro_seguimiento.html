@@ -1,20 +1,33 @@
-{% extends "base.html" %}
-{% block title %}Centro de seguimiento | Movilidad{% endblock %}
+{% extends "expedientes/base_responsable.html" %}
+{% load static %}
+{% block title %}Seguimiento | Centro de Gestión{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'expedientes/seguimiento_v2123.css' %}">{% endblock %}
 {% block content %}
 <section class="seccion"><div class="container">
-<a href="{% url 'expedientes:panel_responsable' %}" class="btn btn-outline-secondary mb-3">Volver al panel</a>
-<h1>Centro de seguimiento de movilidad</h1>
-<p>Actividades de etapa actual y gestiones administrativas adicionales, agrupadas por expediente. Los plazos no registrados no son vencimientos.</p>
-<p><strong>Hoy:</strong> {{ hoy|date:"d/m/Y" }} · <strong>Expedientes con pendientes:</strong> {{ grupos|length }} · <strong>Actividades actuales:</strong> {{ total_actividades }} · <strong>Acciones adicionales:</strong> {{ total_acciones }} · <strong>Borradores:</strong> {{ borradores }} (no enviados)</p>
-<p><a href="{% url 'admin:expedientes_accionseguimiento_add' %}" class="btn btn-outline-primary">Nueva acción administrativa</a> <a href="{% url 'admin:expedientes_recordatorioseguimiento_add' %}" class="btn btn-outline-primary">Preparar recordatorio</a></p>
-<div class="d-flex flex-wrap gap-2 my-3" role="navigation" aria-label="Perspectivas del Centro de Seguimiento">
-  <a class="btn {% if vista == 'pendientes' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'expedientes:centro_seguimiento' %}">Pendientes actuales</a>
-  <a class="btn {% if vista == 'inventario' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'expedientes:centro_seguimiento' %}?vista=inventario">Inventario de responsabilidades</a>
-  <a class="btn {% if vista == 'reglas' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'expedientes:centro_seguimiento' %}?vista=reglas">Diagnóstico de reglas</a>
+<nav class="cg-breadcrumb" aria-label="Ruta de navegación"><a href="{% url 'expedientes:panel_responsable' %}">Mi jornada</a><span aria-hidden="true">/</span><span aria-current="page">Seguimiento</span></nav>
+<header class="cg-follow-head">
+  <div><h1>Seguimiento de expedientes</h1></div>
+  <div class="cg-follow-actions" aria-label="Acciones administrativas">
+    <div class="cg-action-with-help">
+      <a class="cg-follow-btn cg-follow-btn-primary" href="{% url 'admin:expedientes_accionseguimiento_add' %}">Registrar gestión</a>
+      <button type="button" class="cg-help-trigger" data-bs-toggle="tooltip" data-bs-trigger="hover focus click" data-bs-placement="bottom" title="Registra una gestión de seguimiento para un expediente, como solicitar información o confirmar una recepción. No cambia su etapa." aria-label="¿Para qué sirve Registrar gestión?">?</button>
+    </div>
+    <div class="cg-action-with-help">
+      <a class="cg-follow-btn cg-follow-btn-secondary" href="{% url 'admin:expedientes_recordatorioseguimiento_add' %}">Preparar recordatorio</a>
+      <button type="button" class="cg-help-trigger" data-bs-toggle="tooltip" data-bs-trigger="hover focus click" data-bs-placement="bottom" title="Prepara un borrador para dar seguimiento a un pendiente. Esta acción no envía mensajes automáticamente." aria-label="¿Para qué sirve Preparar recordatorio?">?</button>
+    </div>
+  </div>
+</header>
+<nav class="cg-follow-tabs" aria-label="Perspectivas del Centro de Seguimiento">
+  <a title="Pendientes actuales" class="cg-follow-tab {% if vista == 'pendientes' %}is-active{% endif %}" {% if vista == 'pendientes' %}aria-current="page"{% endif %} href="{% url 'expedientes:centro_seguimiento' %}">Pendientes</a>
+  <a title="Inventario de responsabilidades" class="cg-follow-tab {% if vista == 'inventario' %}is-active{% endif %}" {% if vista == 'inventario' %}aria-current="page"{% endif %} href="{% url 'expedientes:centro_seguimiento' %}?vista=inventario">Inventario</a>
+  <a title="Diagnóstico de reglas" class="cg-follow-tab {% if vista == 'reglas' %}is-active{% endif %}" {% if vista == 'reglas' %}aria-current="page"{% endif %} href="{% url 'expedientes:centro_seguimiento' %}?vista=reglas">Diagnóstico de reglas</a>
+</nav>
+{% if vista == 'reglas' %}btn-primary{% else %}btn-outline-primary{% endif %}" href="{% url 'expedientes:centro_seguimiento' %}?vista=reglas">Diagnóstico de reglas</a>
 </div>
 {% if vista == 'reglas' %}
 <h2>Diagnóstico consultivo de reglas</h2>
-<p class="text-muted">Consulta informativa de la etapa actual. No autoriza el avance, no verifica la suficiencia de la evidencia ni modifica el expediente. La falta de configuración es una incidencia administrativa, no un incumplimiento del alumno.</p>
+<p class="cg-follow-warning">Diagnóstico informativo: no autoriza avances ni valida documentos. Una regla sin configurar no es un incumplimiento del estudiante.</p>
 <form method="get" class="row g-2 align-items-end mb-3" aria-label="Selección de expediente para diagnóstico">
   <input type="hidden" name="vista" value="reglas">
   <div class="col-md-8">
@@ -53,7 +66,6 @@
 {% endif %}
 {% elif vista == 'inventario' %}
 <h2>Inventario de responsabilidades por expediente</h2>
-<p class="text-muted">Consulta de solo lectura de todas las actividades registradas en expedientes activos, incluidas etapas anteriores y futuras. El responsable es el ejecutor registrado en el catálogo; no implica verificación ni aprobación institucional.</p>
 <form method="get" class="row g-2 align-items-end mb-3" aria-label="Filtros del inventario">
   <input type="hidden" name="vista" value="inventario">
   <div class="col-md-3"><label class="form-label" for="fil-responsable">Ejecutor</label>
@@ -84,7 +96,7 @@
   <summary class="card-header p-3" style="cursor:pointer;">
     <strong>{{ grupo.expediente.alumno.get_full_name|default:grupo.expediente.alumno.username }}</strong>
     <span class="text-muted"> · Expediente #{{ grupo.expediente.pk }} · {{ grupo.expediente.get_estado_display }}</span>
-    <span class="d-block small text-primary">{{ grupo.actividades|length }} actividad{{ grupo.actividades|length|pluralize }} · Mostrar u ocultar inventario</span>
+    <span class="d-block small text-primary">{{ grupo.actividades|length }} actividad{{ grupo.actividades|length|pluralize }}</span>
   </summary>
   <div class="card-body">
     <p><a href="{% url 'expedientes:ruta_responsable' grupo.expediente.pk %}" class="btn btn-sm btn-outline-secondary">Ver expediente</a></p>
@@ -113,7 +125,7 @@
     <span class="text-muted"> · Expediente #{{ grupo.expediente.pk }} · {{ grupo.expediente.get_estado_display }}</span>
     <span class="badge bg-secondary ms-2">{{ grupo.total }} pendiente{{ grupo.total|pluralize }}</span>
     <span class="d-block small mt-1">{% for r in grupo.responsables %}{{ r.nombre }}: {{ r.total }}{% if not forloop.last %} · {% endif %}{% endfor %}</span>
-    <span class="d-block small text-primary">Mostrar u ocultar pendientes</span>
+    <span class="d-block small text-primary">Ver pendientes</span>
   </summary>
   <div class="card-body">
     <p><a class="btn btn-sm btn-outline-secondary" href="{% url 'expedientes:ruta_responsable' grupo.expediente.pk %}">Ver expediente</a></p>
@@ -140,7 +152,18 @@
   </div>
 </details>
 {% empty %}<div class="alert alert-light border">No existen actividades actuales ni acciones adicionales pendientes.</div>{% endfor %}
-<p class="text-muted small">Los recordatorios son borradores; esta versión no envía correos ni notificaciones automáticas. Las actividades futuras no se consideran vencidas.</p>
+
 {% endif %}
 </div></section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (!window.bootstrap || !window.bootstrap.Tooltip) return;
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (element) {
+    new window.bootstrap.Tooltip(element, { container: "body" });
+  });
+});
+</script>
 {% endblock %}
